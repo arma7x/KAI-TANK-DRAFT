@@ -1,90 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no,minimal-ui">
-    <title>Prototype</title>
-  </head>
-  <body style="margin:0;padding:0;">
-    <script src="/stage.web.min.js"></script>
-    <script>
-      window.addEventListener('load', () => {
-        // Create new app
-        Stage(function(stage) {
-
-          var rotation = 0;
-
-          // Set view box
-          stage.viewbox(240, 320);
-
-          // Create an image and append it to stage
-          var tank = Stage.image('tank').appendTo(stage);
-          tank.__DIRECTION__ = 'ArrowDown';
-          tank.scale(0.2, 0.2);
-          tank.rotate(0);
-
-          // Align tank to center
-          tank.pin('align', 0.5);
-
-          // On mouse click...
-          tank.on('click', function(point) {
-            // ...tween scale values of this node
-            this.tween().ease('bounce').pin({
-              scaleX : Math.random() + 0.5,
-              scaleY : Math.random() + 0.5
-            });
-          });
-
-          function rotateAvatar(tank, to) {
-            if ((tank.__DIRECTION__ === 'ArrowDown' && to === 'ArrowRight') || (tank.__DIRECTION__ === 'ArrowRight' && to === 'ArrowUp') || (tank.__DIRECTION__ === 'ArrowUp' && to === 'ArrowLeft') || (tank.__DIRECTION__ === 'ArrowLeft' && to === 'ArrowDown'))
-              x = -90;
-            else if ((tank.__DIRECTION__ === 'ArrowDown' && to === 'ArrowLeft') || (tank.__DIRECTION__ === 'ArrowLeft' && to === 'ArrowUp') || (tank.__DIRECTION__ === 'ArrowUp' && to === 'ArrowRight') || (tank.__DIRECTION__ === 'ArrowRight' && to === 'ArrowDown'))
-              x = 90;
-            else if ((tank.__DIRECTION__ === 'ArrowUp' && to === 'ArrowDown') || (tank.__DIRECTION__ === 'ArrowDown' && to === 'ArrowUp') || (tank.__DIRECTION__ === 'ArrowLeft' && to === 'ArrowRight') || (tank.__DIRECTION__ === 'ArrowRight' && to === 'ArrowLeft'))
-              x = 180;
-            console.log(tank._pin._rotation + x, tank._pin._rotation, x)
-            tank.rotate(tank._pin._rotation + x);
-          }
-
-          document.addEventListener('keydown', function(evt) {
-            // rotateAvatar(tank, evt.key)
-            switch (evt.key) {
-              case 'ArrowUp':
-                tank.offset(tank._pin._offsetX, tank._pin._offsetY - 1);
-                break;
-              case 'ArrowRight':
-                tank.offset(tank._pin._offsetX + 1, tank._pin._offsetY);
-                break;
-              case 'ArrowDown':
-                tank.offset(tank._pin._offsetX, tank._pin._offsetY + 1);
-                break;
-              case 'ArrowLeft':
-                tank.offset(tank._pin._offsetX - 1, tank._pin._offsetY);
-                break;
-              case 'R':
-              case 'r':
-                console.log("BEFORE", tank._pin._rotation)
-                rotation += 90;
-                if (rotation > 360) {
-                  rotation = 0;
-                }
-                tank.rotate(rotation);
-                console.log("AFTER", tank._pin._rotation)
-                console.log("--------------")
-            }
-            //console.log(tank._pin)
-          });
-        });
-
-        // Adding a texture
-        Stage({
-          image : '/tank.png',
-          ratio : 1,
-          textures : {
-            tank : { x : 0, y : 0, width : 100, height : 100 }
-          }
-        });
+    <script src="melonjs.min.js"></script>
+    <script src="app.js"></script>
+    <script type="text/javascript">
+      me.device.onReady(function onReady() {
+        game.onload();
       });
     </script>
+  </head>
+  <body>
   </body>
 </html>
