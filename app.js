@@ -50,8 +50,10 @@ game.Tank = me.Sprite.extend({
     ]);
     this.scale(0.3, 0.3);
     this.vel = 45;
-    this.maxX = me.game.viewport.width - this.width;
-    this.maxY = me.game.viewport.height - this.height;
+    this.minX = (this.height / 2);
+    this.maxX = me.game.viewport.width - (this.height / 2);
+    this.minY = (this.height / 2);
+    this.maxY = me.game.viewport.height - (this.height / 2);
   },
   update: function(time) {
     this._super(me.Sprite, "update", [time]);
@@ -66,8 +68,8 @@ game.Tank = me.Sprite.extend({
       console.log("MOVING DOWN");
     }
     
-    this.pos.y = me.Math.clamp(this.pos.y, 0, this.maxY);
-    this.pos.x = me.Math.clamp(this.pos.x, 0, this.maxX);
+    this.pos.y = me.Math.clamp(this.pos.y, this.minY, this.maxY);
+    this.pos.x = me.Math.clamp(this.pos.x, this.minX, this.maxX);
 
     return true;
   }
