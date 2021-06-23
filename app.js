@@ -1,6 +1,6 @@
 var game = {
   resources: [
-    { name: "greentank", type: "image", "src": "tank-green.png" }
+    { name: "greentank", type: "image", "src": "tank-green.png",  }
   ],
   loaded: function() {
     me.pool.register("greentank", game.Tank);
@@ -22,9 +22,20 @@ var game = {
 
 
 game.PlayScreen = me.ScreenObject.extend({
-  onResetEvent: () => {
+  onResetEvent: function() {
     me.game.world.addChild(me.pool.pull("greentank"));
-    me.game.world.addChild(new me.ColorLayer("background", "#000"), 0);
+    me.game.world.addChild(new me.ColorLayer("background", "#A00"), 0);
+    
+    me.input.bindKey(me.input.KEY.LEFT, "left");
+    me.input.bindKey(me.input.KEY.RIGHT, "right");
+    me.input.bindKey(me.input.KEY.UP, "up");
+    me.input.bindKey(me.input.KEY.DOWN, "down");
+  },
+  onDestroyEvent: function() {
+    me.input.unbindKey(me.input.KEY.LEFT);
+    me.input.unbindKey(me.input.KEY.RIGHT);
+    me.input.unbindKey(me.input.KEY.UP);
+    me.input.unbindKey(me.input.KEY.DOWN);
   }
 });
 
@@ -32,8 +43,31 @@ game.Tank = me.Sprite.extend({
   init: function() {
     this._super(me.Sprite, "init", [
       me.game.viewport.width / 2 - 16, // 16 = 32 / 2 where 32 is width
-      me.game.viewport.height - 16,
-      { image: me.loader.getImage("greentank"), width: 32, height: 32 }
+      me.game.viewport.height / 2 - 16,
+      {
+        image: me.loader.getImage("greentank"),
+      }
     ]);
+    this.vel = 45;
+    this.maxX = me.game.viewport.width - this.width;
+    this.maxY = me.game.viewport.height - this.height;
+  },
+  update: function(time) {
+    this._super(me.Sprite, "update", [time]);
+    if (me.input.isKeyPressed("left")) 
+      this.pos.x -= this.vel * time / 1000;
+    if (me.input.isKeyPressed("right"))
+      this.pos.x += this.vel * time / 1000;
+    if (me.input.isKeyPressed("up"))
+      this.pos.y -= this.vel * time / 1000;
+    if (me.input.isKeyPressed("down")) {
+      this.pos.y += this.vel * time / 1000;
+      console.log("MOVING DOWN");
+    }
+    
+    this.pos.y = me.Math.clamp(this.pos.y, 0, this.maxY);
+    this.pos.x = me.Math.clamp(this.pos.x, 0, this.maxX);
+
+    return true;
   }
 });
