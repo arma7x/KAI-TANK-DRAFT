@@ -48,6 +48,7 @@ game.Tank = me.Sprite.extend({
         image: me.loader.getImage("greentank"),
       }
     ]);
+    this.__DIRECTION__ = 'down';
     this.scale(0.3, 0.3);
     this.vel = 45;
     this.minX = (this.height / 2);
@@ -57,15 +58,26 @@ game.Tank = me.Sprite.extend({
   },
   update: function(time) {
     this._super(me.Sprite, "update", [time]);
-    if (me.input.isKeyPressed("left")) 
-      this.pos.x -= this.vel * time / 1000;
-    if (me.input.isKeyPressed("right"))
-      this.pos.x += this.vel * time / 1000;
-    if (me.input.isKeyPressed("up"))
-      this.pos.y -= this.vel * time / 1000;
-    if (me.input.isKeyPressed("down")) {
-      this.pos.y += this.vel * time / 1000;
-      console.log("MOVING DOWN");
+    if (me.input.isKeyPressed("left")) {
+      if (this.__DIRECTION__ !== 'left') {
+        rotateTank(this, 'left');
+      } else
+        this.pos.x -= this.vel * time / 1000;
+    } else if (me.input.isKeyPressed("right")){
+      if (this.__DIRECTION__ !== 'right') {
+        rotateTank(this, 'right');
+      } else
+        this.pos.x += this.vel * time / 1000;
+    } else if (me.input.isKeyPressed("up")) {
+      if (this.__DIRECTION__ !== 'up') {
+        rotateTank(this, 'up');
+      } else
+        this.pos.y -= this.vel * time / 1000;
+    } else if (me.input.isKeyPressed("down")) {
+      if (this.__DIRECTION__ !== 'down') {
+        rotateTank(this, 'down');
+      } else
+        this.pos.y += this.vel * time / 1000;
     }
     
     this.pos.y = me.Math.clamp(this.pos.y, this.minY, this.maxY);
@@ -74,3 +86,15 @@ game.Tank = me.Sprite.extend({
     return true;
   }
 });
+
+function rotateTank(tank, to) {
+  var x = 0;
+  if ((tank.__DIRECTION__ === 'down' && to === 'right') || (tank.__DIRECTION__ === 'right' && to === 'up') || (tank.__DIRECTION__ === 'up' && to === 'left') || (tank.__DIRECTION__ === 'left' && to === 'down'))
+    x = -90;
+  else if ((tank.__DIRECTION__ === 'down' && to === 'left') || (tank.__DIRECTION__ === 'left' && to === 'up') || (tank.__DIRECTION__ === 'up' && to === 'right') || (tank.__DIRECTION__ === 'right' && to === 'down'))
+    x = 90;
+  else if ((tank.__DIRECTION__ === 'up' && to === 'down') || (tank.__DIRECTION__ === 'down' && to === 'up') || (tank.__DIRECTION__ === 'left' && to === 'right') || (tank.__DIRECTION__ === 'right' && to === 'left'))
+    x = 180;
+  tank.__DIRECTION__ = to;
+  tank.rotate(x * Math.PI / 180);
+}
