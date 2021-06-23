@@ -21,7 +21,7 @@ var game = {
 };
 
 
-game.PlayScreen = me.ScreenObject.extend({
+game.PlayScreen = me.Stage.extend({
   onResetEvent: function() {
     me.game.world.addChild(me.pool.pull("greentank"));
     me.game.world.addChild(new me.ColorLayer("background", "#A00"), 0);
@@ -42,12 +42,13 @@ game.PlayScreen = me.ScreenObject.extend({
 game.Tank = me.Sprite.extend({
   init: function() {
     this._super(me.Sprite, "init", [
-      me.game.viewport.width / 2 - 16, // 16 = 32 / 2 where 32 is width
-      me.game.viewport.height / 2 - 16,
+      me.game.viewport.width / 2,
+      me.game.viewport.height / 2,
       {
         image: me.loader.getImage("greentank"),
       }
     ]);
+    this.scale(0.3, 0.3);
     this.vel = 45;
     this.maxX = me.game.viewport.width - this.width;
     this.maxY = me.game.viewport.height - this.height;
