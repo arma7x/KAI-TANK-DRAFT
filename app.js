@@ -49,8 +49,7 @@ game.Tank = me.Sprite.extend({
       }
     ]);
     this.__DIRECTION__ = 'down';
-    this.scale(0.3, 0.3);
-    this.vel = 45;
+    this.vel = 65;
     this.minX = (this.height / 2);
     this.maxX = me.game.viewport.width - (this.height / 2);
     this.minY = (this.height / 2);
@@ -88,13 +87,8 @@ game.Tank = me.Sprite.extend({
 });
 
 function rotateTank(tank, to) {
-  var x = 0;
-  if ((tank.__DIRECTION__ === 'down' && to === 'right') || (tank.__DIRECTION__ === 'right' && to === 'up') || (tank.__DIRECTION__ === 'up' && to === 'left') || (tank.__DIRECTION__ === 'left' && to === 'down'))
-    x = -90;
-  else if ((tank.__DIRECTION__ === 'down' && to === 'left') || (tank.__DIRECTION__ === 'left' && to === 'up') || (tank.__DIRECTION__ === 'up' && to === 'right') || (tank.__DIRECTION__ === 'right' && to === 'down'))
-    x = 90;
-  else if ((tank.__DIRECTION__ === 'up' && to === 'down') || (tank.__DIRECTION__ === 'down' && to === 'up') || (tank.__DIRECTION__ === 'left' && to === 'right') || (tank.__DIRECTION__ === 'right' && to === 'left'))
-    x = 180;
+  const dirAngle = {up: 0, right: 90, down: 180, left: 270};
+  const x = dirAngle[to] - dirAngle[tank.__DIRECTION__];
   tank.__DIRECTION__ = to;
   tank.rotate(x * Math.PI / 180);
 }
