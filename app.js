@@ -20,7 +20,7 @@ var game = {
 
     me.audio.init("ogg");
     me.loader.preload(game.resources, this.loaded.bind(this));
-    socket = io("https://shangul.de1.hashbang.sh",
+    socket = io("https://shangul.de1.hashbang.sh/",
       {
         path: "/server",
         transports: ["websocket"],

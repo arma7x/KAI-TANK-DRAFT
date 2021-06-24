@@ -30,4 +30,4 @@ def connect():
     emit("others_pos", {"data": get_tanks_pos()}, broadcast=True)
 
 if __name__ == "__main__":
-    socketio.run(app, port=65000)
+    socketio.run(app, host="0.0.0.0", port=65000, debug=True)
