@@ -1,3 +1,4 @@
+const BULLET_SIZE = 4;
 var myId = parseInt(Math.random() * 1e10 + 1001);
 var socket = null;
 var currentPlayer = null;
@@ -57,14 +58,14 @@ me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
     var bX, bY, bD;
     if (yAxis.indexOf(currentPlayer.__DIRECTION__) > -1) {
       if (currentPlayer.__DIRECTION__ === 'down')
-        bX = currentPlayer.pos.x - 3, bY = currentPlayer.pos.y + (currentPlayer.height / 2), bD = 'down';
+        bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y + (currentPlayer.height / 2), bD = 'down';
       else
-        bX = currentPlayer.pos.x - 3, bY = currentPlayer.pos.y - (currentPlayer.height / 2) - 3, bD = 'up';
+        bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y - (currentPlayer.height / 2) - (BULLET_SIZE/2), bD = 'up';
     } else {
       if (currentPlayer.__DIRECTION__ === 'right')
-        bX = currentPlayer.pos.x + (currentPlayer.width / 2), bY = currentPlayer.pos.y - 3, bD = 'right';
+        bX = currentPlayer.pos.x + (currentPlayer.width / 2), bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'right';
       else
-        bX = currentPlayer.pos.x + (currentPlayer.width / 2) - 3 - currentPlayer.width, bY = currentPlayer.pos.y - 3, bD = 'left';
+        bX = currentPlayer.pos.x + (currentPlayer.width / 2) - (BULLET_SIZE/2) - currentPlayer.width, bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'left';
     }
     const b = me.game.world.addChild(me.pool.pull("bullet", bX, bY))
     b.__DIRECTION__ = bD;
@@ -81,6 +82,7 @@ game.Tank = me.Sprite.extend({
       }
     ]);
     this.__DIRECTION__ = 'down';
+    this.scale(0.7, 0.7);
     this.vel = 65;
     this.minX = (this.width / 2);
     this.maxX = me.game.viewport.width - (this.height / 2);
@@ -125,12 +127,12 @@ game.Tank = me.Sprite.extend({
 
 game.Bullet = me.Entity.extend({
     init : function (x, y) {
-        this._super(me.Entity, "init", [x, y, { width: 6, height: 6 }]);
+        this._super(me.Entity, "init", [x, y, { width: BULLET_SIZE, height: BULLET_SIZE }]);
         this.vel = 250;
         this.body.collisionType = me.collision.types.PROJECTILE_OBJECT;
         this.renderable = new (me.Renderable.extend({
             init : function () {
-                this._super(me.Renderable, "init", [0, 0, 6, 6]);
+                this._super(me.Renderable, "init", [0, 0, BULLET_SIZE, BULLET_SIZE]);
             },
             destroy : function () {},
             draw : function (renderer) {
