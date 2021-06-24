@@ -82,7 +82,7 @@ game.Tank = me.Sprite.extend({
       }
     ]);
     this.__DIRECTION__ = 'down';
-    this.scale(0.7, 0.7);
+    this.scale(0.75, 0.75);
     this.vel = 65;
     this.minX = (this.width / 2);
     this.maxX = me.game.viewport.width - (this.height / 2);
@@ -126,7 +126,7 @@ game.Tank = me.Sprite.extend({
 });
 
 game.Bullet = me.Entity.extend({
-    init : function (x, y) {
+    init: function (x, y) {
         this._super(me.Entity, "init", [x, y, { width: BULLET_SIZE, height: BULLET_SIZE }]);
         this.vel = 250;
         this.body.collisionType = me.collision.types.PROJECTILE_OBJECT;
@@ -145,7 +145,7 @@ game.Bullet = me.Entity.extend({
         this.alwaysUpdate = true;
     },
 
-    update : function (time) {
+    update: function (time) {
       if (this.__DIRECTION__) {
         if (this.__DIRECTION__ === 'down') {
           this.pos.y += this.vel * time / 1000;
