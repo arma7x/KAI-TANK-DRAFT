@@ -126,8 +126,7 @@ game.Tank = me.Sprite.extend({
 game.Bullet = me.Entity.extend({
     init : function (x, y) {
         this._super(me.Entity, "init", [x, y, { width: 6, height: 6 }]);
-        this.z = 6;
-        this.body.setVelocity(0, 300);
+        this.vel = 250;
         this.body.collisionType = me.collision.types.PROJECTILE_OBJECT;
         this.renderable = new (me.Renderable.extend({
             init : function () {
@@ -146,22 +145,22 @@ game.Bullet = me.Entity.extend({
 
     update : function (time) {
         if (this.__DIRECTION__ === 'down') {
-          this.pos.y += 250 * time / 1000;
+          this.pos.y += this.vel * time / 1000;
           if (this.pos.y + this.height >= me.game.viewport.height) {
               me.game.world.removeChild(this);
           }
         } else if (this.__DIRECTION__ === 'up') {
-          this.pos.y -= 250 * time / 1000;
+          this.pos.y -= this.vel * time / 1000;
           if (this.pos.y - this.height <= 0) {
               me.game.world.removeChild(this);
           }
         } else if (this.__DIRECTION__ === 'right') {
-          this.pos.x += 250 * time / 1000;
+          this.pos.x += this.vel * time / 1000;
           if (this.pos.x + this.width >= me.game.viewport.width) {
               me.game.world.removeChild(this);
           }
         } else if (this.__DIRECTION__ === 'left') {
-          this.pos.x -= 250 * time / 1000;
+          this.pos.x -= this.vel * time / 1000;
           if (this.pos.x - this.width <= 0) {
               me.game.world.removeChild(this);
           }
