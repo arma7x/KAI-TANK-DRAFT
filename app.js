@@ -144,6 +144,7 @@ game.Bullet = me.Entity.extend({
     },
 
     update : function (time) {
+      if (this.__DIRECTION__) {
         if (this.__DIRECTION__ === 'down') {
           this.pos.y += this.vel * time / 1000;
           if (this.pos.y + this.height >= me.game.viewport.height) {
@@ -165,8 +166,9 @@ game.Bullet = me.Entity.extend({
               me.game.world.removeChild(this);
           }
         }
-
-        return true;
+      }
+      me.collision.check(this);
+      return true;
     }
 });
 
