@@ -1,3 +1,6 @@
+var myId = parseInt(Math.random() * 1e10 + 1001);
+var socket = io("/server");
+
 var game = {
   resources: [
     { name: "greentank", type: "image", "src": "tank-green.png",  }
@@ -54,6 +57,10 @@ game.Tank = me.Sprite.extend({
     this.maxX = me.game.viewport.width - (this.height / 2);
     this.minY = (this.height / 2);
     this.maxY = me.game.viewport.height - (this.height / 2);
+    socket.on("pos", function(data) {
+      this.pos.x = data[0];
+      this.pos.y = data[1];
+    });
   },
   update: function(time) {
     this._super(me.Sprite, "update", [time]);
@@ -78,9 +85,10 @@ game.Tank = me.Sprite.extend({
       } else
         this.pos.y += this.vel * time / 1000;
     }
-    
-    this.pos.y = me.Math.clamp(this.pos.y, this.minY, this.maxY);
-    this.pos.x = me.Math.clamp(this.pos.x, this.minX, this.maxX);
+        
+    const new_y = me.Math.clamp(this.pos.y, this.minY, this.maxY);
+    const new_x = me.Math.clamp(this.pos.x, this.minX, this.maxX);
+    socket.emit("move", {data: [this.pos.x - new_x, this.pos.y - new_y]});
 
     return true;
   }
