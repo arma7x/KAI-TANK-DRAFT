@@ -1,5 +1,5 @@
 var myId = parseInt(Math.random() * 1e10 + 1001);
-var socket = io("/server");
+var socket = null;
 
 var game = {
   resources: [
@@ -20,6 +20,12 @@ var game = {
 
     me.audio.init("ogg");
     me.loader.preload(game.resources, this.loaded.bind(this));
+    socket = io("https://shangul.de1.hashbang.sh",
+      {
+        path: "/server",
+        transports: ["websocket"],
+      }
+    );
   },
 };
 
@@ -100,3 +106,7 @@ function rotateTank(tank, to) {
   tank.__DIRECTION__ = to;
   tank.rotate(x * Math.PI / 180);
 }
+
+me.device.onReady(function onReady() {
+  game.onload();
+});
