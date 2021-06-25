@@ -1,33 +1,56 @@
-from flask import Flask, g
-from flask_socketio import SocketIO, emit
+import asyncio
+import json
+import random
+from dataclasses import dataclass
 
-app = Flask(__name__)
-app.config["SECRET_KEY"] = "secret!"
-socketio = SocketIO(app)
+import websockets
 
-def update_tank_pos(tank_id, move=(0,0)):
-    positions = getattr(g, "_positions", {})
-    tank_pos = positions.get(tank_id, (100, 100))
-    tank_pos[0] += move[0]
-    tank_pos[1] += move[1]
-    positions.set(tank_id, tank_pos)
-    setattr(g, "_positions", positions)
-    return positions[tank_id]
+PLAYERS = dict()
 
-def get_tanks_pos(radius=10000):
-    return getattr(g, "_positions", {})
+@dataclass
+class Position:
+    x: float = 100
+    y: float = 100
 
-@socketio.on("move")
-def move_tank(message):
-    tank_id = message["id"]
-    move = message.get("move", (0, 0))
-    emit("pos", {"data": update_tank_pos(tank_id, move)})
-    emit("others_pos", {"data": get_tanks_pos()}, broadcast=True)
+@dataclass
+class Player:
+    pos: Position = Position()
+    hp: float = 100
 
-@socketio.on("connect")
-def connect():
-    emit("pos", {"data": update_tank_pos(tank_id, move)})
-    emit("others_pos", {"data": get_tanks_pos()}, broadcast=True)
+    async def to_dict(self):
+        return dict(hp=self.hp, x=self.pos.x, y=self.pos.y)
 
-if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=65000, debug=True)
+async def generate_id():
+    id_ = random.randint(1_000_000_000, 2_000_000_000)
+    if id_ in PLAYERS:
+        return generate_id()
+    return id_
+
+async def init():
+    id_ = await generate_id()
+    PLAYERS[id_] = Player()
+    return id_
+
+async def move(id_, movement):
+    PLAYERS[id_].pos.x += movement[0]
+    PLAYERS[id_].pos.y += movement[1]
+
+async def accept(ws, path):
+    global PLAYERS
+
+    id_ = await init()
+    async for message in ws:
+        await ws.send(json.dumps({
+            "id": id_,
+            "others": [(await PLAYERS[pl_id].to_dict() if pl_id != id_ else None) for pl_id in PLAYERS]
+        }))
+        message = json.loads(message)
+        movement = message.get("move")
+        if movement:
+            await move(id_, movement)
+            
+    print("CONNECTION CLOSED:", ws)
+
+asyncio.get_event_loop().run_until_complete(websockets.serve(accept, "0.0.0.0", 65000))
+asyncio.get_event_loop().run_forever()
+

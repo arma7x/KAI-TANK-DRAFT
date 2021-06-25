@@ -1,7 +1,9 @@
 const BULLET_SIZE = 4;
-var myId = parseInt(Math.random() * 1e10 + 1001);
-var socket = null;
+var myId = null;
 var currentPlayer = null;
+var others = [];
+var socket = null;
+
 
 var game = {
   resources: [
@@ -23,12 +25,13 @@ var game = {
 
     me.audio.init("ogg");
     me.loader.preload(game.resources, this.loaded.bind(this));
-    //socket = io("https://shangul.de1.hashbang.sh/",
-      //{
-        //path: "/server",
-        //transports: ["websocket"],
-      //}
-    //);
+    socket = new WebSocket("wss://shangul.de1.hashbang.sh/server");
+    socket.onmessage = evt => {
+      let message = JSON.parse(evt.data);
+      if (myId === null)
+        myId = message.id;
+      others = message.others;
+    };
   },
 };
 
@@ -117,9 +120,12 @@ game.Tank = me.Sprite.extend({
         this.pos.y += this.vel * time / 1000;
     }
 
-    this.pos.y = me.Math.clamp(this.pos.y, this.minY, this.maxY);
-    this.pos.x = me.Math.clamp(this.pos.x, this.minX, this.maxX);
-    //socket.emit("move", {data: [this.pos.x - new_x, this.pos.y - new_y]});
+    let newY = me.Math.clamp(this.pos.y, this.minY, this.maxY);
+    let newX = me.Math.clamp(this.pos.x, this.minX, this.maxX);
+    if (socket && socket.readyState === WebSocket.OPEN)
+      socket.send(JSON.stringify({move: [this.pos.x - newX, this.pos.y - newY]}));
+    this.pos.x = newX;
+    this.pos.y = newY;
 
     return true;
   }
