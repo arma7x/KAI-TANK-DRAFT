@@ -1,7 +1,7 @@
 const BULLET_SIZE = 4;
 var myId = null;
 var currentPlayer = null;
-var others = [];
+var others = null;
 var socket = null;
 
 
@@ -30,7 +30,7 @@ var game = {
       let message = JSON.parse(evt.data);
       if (myId === null)
         myId = message.id;
-      others = message.others;
+      others = message.others || others;
     };
   },
 };
@@ -40,6 +40,16 @@ game.PlayScreen = me.Stage.extend({
   onResetEvent: function() {
     currentPlayer = me.game.world.addChild(me.pool.pull("greentank"));
     me.game.world.addChild(new me.ColorLayer("background", "#A00"), 0);
+    var _t = this;
+    this.timer = me.timer.setInterval(function() {
+      if (!others) return;
+      others
+        .filter(other => Boolean(other))
+        .map(other => new me.Entity(other.x, other.y, {width: 24, height: 24, image: "greentank"}))
+        .forEach(entity => {
+          me.game.world.addChild(entity);
+        });
+    }, 10);
     
     me.input.bindKey(me.input.KEY.LEFT, "left");
     me.input.bindKey(me.input.KEY.RIGHT, "right");
@@ -91,10 +101,6 @@ game.Tank = me.Sprite.extend({
     this.maxX = me.game.viewport.width - (this.height / 2);
     this.minY = (this.height / 2);
     this.maxY = me.game.viewport.height - (this.height / 2);
-    //socket.on("pos", function(data) {
-    //  this.pos.x = data[0];
-    //  this.pos.y = data[1];
-    //});
   },
   update: function(time) {
     this._super(me.Sprite, "update", [time]);

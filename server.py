@@ -35,6 +35,7 @@ async def move(id_, movement):
     PLAYERS[id_].pos.x += movement[0]
     PLAYERS[id_].pos.y += movement[1]
 
+
 async def accept(ws, path):
     global PLAYERS
 
@@ -45,12 +46,16 @@ async def accept(ws, path):
             "others": [(await PLAYERS[pl_id].to_dict() if pl_id != id_ else None) for pl_id in PLAYERS]
         }))
         message = json.loads(message)
+        if message.get("bye") == "BYE":
+            break
+
         movement = message.get("move")
         if movement:
             await move(id_, movement)
-            
-    print("CONNECTION CLOSED:", ws)
+        await ws.send(json.dumps(await PLAYERS[id_].to_dict()))
+    
+    PLAYERS.pop(id_)
 
-asyncio.get_event_loop().run_until_complete(websockets.serve(accept, "0.0.0.0", 65000))
+asyncio.get_event_loop().run_until_complete(websockets.unix_serve(accept, "/home/shangul/.tank.sock"))
 asyncio.get_event_loop().run_forever()
 
