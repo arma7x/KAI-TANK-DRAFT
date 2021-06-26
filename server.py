@@ -1,6 +1,7 @@
 import asyncio
 import json
 import random
+import sys
 from dataclasses import dataclass
 
 import websockets
@@ -39,7 +40,6 @@ async def pos(id_, new_pos):
     PLAYERS[id_].pos.x = new_pos[0]
     PLAYERS[id_].pos.y = new_pos[1]
 
-
 async def accept(ws, path):
     global PLAYERS
     
@@ -60,6 +60,20 @@ async def accept(ws, path):
     
     PLAYERS.pop(id_)
 
-asyncio.get_event_loop().run_until_complete(websockets.unix_serve(accept, "/home/shangul/.tank.sock"))
+
+if len(sys.argv) not in (1,2):
+    print("Invalid number of command line arguments", file=sys.stderr)
+
+bind_addr = "/home/shangul/.tank.sock"
+if len(sys.argv) == 2:
+    bind_addr = sys.argv[1]
+
+if bind_addr.startswith("/"):
+    asyncio.get_event_loop().run_until_complete(websockets.unix_serve(accept, bind_addr))
+else:
+    bind_addr = bind_addr.split(":")
+    ip = bind_addr[0] or "127.0.0.1"
+    port = int(bind_addr[1])
+    asyncio.get_event_loop().run_until_complete(websockets.serve(accept, ip, port))
 asyncio.get_event_loop().run_forever()
 
