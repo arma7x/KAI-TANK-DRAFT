@@ -126,12 +126,10 @@ game.Tank = me.Sprite.extend({
         this.pos.y += this.vel * time / 1000;
     }
 
-    let newY = me.Math.clamp(this.pos.y, this.minY, this.maxY);
-    let newX = me.Math.clamp(this.pos.x, this.minX, this.maxX);
+    this.pos.y = me.Math.clamp(this.pos.y, this.minY, this.maxY);
+    this.pos.x = me.Math.clamp(this.pos.x, this.minX, this.maxX);
     if (socket && socket.readyState === WebSocket.OPEN)
-      socket.send(JSON.stringify({move: [this.pos.x - newX, this.pos.y - newY]}));
-    this.pos.x = newX;
-    this.pos.y = newY;
+      socket.send(JSON.stringify({pos: [this.pos.x, this.pos.y]}));
 
     return true;
   }
