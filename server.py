@@ -16,9 +16,10 @@ class Position:
 class Player:
     pos: Position = Position()
     hp: float = 100
+    nick: str = ""
 
-    async def to_dict(self):
-        return dict(hp=self.hp, x=self.pos.x, y=self.pos.y)
+    def to_dict(self):
+        return dict(hp=self.hp, x=self.pos.x, y=self.pos.y, nick=self.nick)
 
 async def generate_id():
     id_ = random.randint(1_000_000_000, 2_000_000_000)
@@ -26,33 +27,36 @@ async def generate_id():
         return generate_id()
     return id_
 
-async def init():
+async def init(nick):
     id_ = await generate_id()
-    PLAYERS[id_] = Player()
+    if nick is None:
+        nick = f"p{str(id_)[:5]}"
+    PLAYERS[id_] = Player(nick=nick)
     return id_
 
-async def move(id_, movement):
-    PLAYERS[id_].pos.x += movement[0]
-    PLAYERS[id_].pos.y += movement[1]
+async def pos(id_, new_pos):
+    # TODO: validate move here
+    PLAYERS[id_].pos.x = new_pos[0]
+    PLAYERS[id_].pos.y = new_pos[1]
 
 
 async def accept(ws, path):
     global PLAYERS
-
-    id_ = await init()
+    
+    nick = json.loads(await ws.recv()).get("nick")
+    id_ = await init(nick)
     async for message in ws:
         await ws.send(json.dumps({
             "id": id_,
-            "others": [(await PLAYERS[pl_id].to_dict() if pl_id != id_ else None) for pl_id in PLAYERS]
+            "others": [PLAYERS[pl_id].to_dict() for pl_id in PLAYERS]
         }))
         message = json.loads(message)
         if message.get("bye") == "BYE":
             break
 
-        movement = message.get("move")
-        if movement:
-            await move(id_, movement)
-        await ws.send(json.dumps(await PLAYERS[id_].to_dict()))
+        new_pos = message.get("pos")
+        if new_pos:
+            await pos(id_, new_pos)
     
     PLAYERS.pop(id_)
 
