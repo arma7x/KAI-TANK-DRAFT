@@ -14,7 +14,7 @@ class Position:
 
 @dataclass
 class Player:
-    pos: Position = Position()
+    pos: Position
     hp: float = 100
     nick: str = ""
 
@@ -31,7 +31,7 @@ async def init(nick):
     id_ = await generate_id()
     if nick is None:
         nick = f"p{str(id_)[:5]}"
-    PLAYERS[id_] = Player(nick=nick)
+    PLAYERS[id_] = Player(nick=nick, pos=Position(x=100,y=100))
     return id_
 
 async def pos(id_, new_pos):
