@@ -19,7 +19,7 @@ var game = {
 
     let host = "shangul.de1.hashbang.sh"
     if (document.location.host != host)
-      host = "ws://192.168.43.33:3000"
+      host = "ws://0.0.0.0:3000"
     else
       host = "wss://shangul.de1.hashbang.sh/server"
     socket = new WebSocket(host);
