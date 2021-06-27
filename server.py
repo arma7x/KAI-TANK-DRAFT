@@ -2,6 +2,7 @@ import asyncio
 import json
 import random
 import sys
+import re
 from dataclasses import dataclass
 
 import websockets
@@ -65,7 +66,7 @@ async def pos(id_, new_pos):
 async def accept(ws, path):
     nick_check = re.compile("[A-Za-z0-9]+").match
     nick = json.loads(await ws.recv()).get("nick")
-    if not nick_check(nick):
+    if nick and not nick_check(nick):
         await ws.send('{"error": "Invalid nick"}')
         return
     id_ = await init(nick)
