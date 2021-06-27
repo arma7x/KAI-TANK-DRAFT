@@ -85,6 +85,8 @@ async def accept(ws, path):
 
     PLAYERS.pop(id_)
     WSCONS.remove(ws)
+    for con in WSCONS:
+      await con.send(json.dumps({"dc": id_}))
 
 
 if __name__ == "__main__":

@@ -51,6 +51,12 @@ var game = {
           }
         }
       }
+      if (data.dc) {
+        if (othersPlayer[data.dc]) {
+          me.game.world.removeChild(othersPlayer[data.dc]);
+          delete othersPlayer[data.dc];
+        }
+      }
     };
     socket.onopen = () => {
       socket.send(JSON.stringify({ping: true}));
