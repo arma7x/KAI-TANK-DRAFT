@@ -102,7 +102,7 @@ if __name__ == "__main__":
         )
     else:
         bind_addr = bind_addr.split(":")
-        ip = bind_addr[0] or "127.0.0.1"
+        ip = bind_addr[0] or "0.0.0.0"
         port = int(bind_addr[1])
         asyncio.get_event_loop().run_until_complete(
             websockets.serve(accept, ip, port)
