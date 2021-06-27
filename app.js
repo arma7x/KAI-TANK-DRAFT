@@ -30,7 +30,10 @@ var game = {
         currentPlayer = me.game.world.addChild(me.pool.pull("greentank"));
         currentPlayer.pos.x = me.Math.clamp(data.position.x, currentPlayer.minX, currentPlayer.maxX);
         currentPlayer.pos.y = me.Math.clamp(data.position.y, currentPlayer.minY, currentPlayer.maxY);
-        socket.send(JSON.stringify({move: [currentPlayer.pos.x, currentPlayer.pos.y]}));
+        if (currentPlayer.__DIRECTION__ !== data.position.direction) {
+          rotateTank(currentPlayer, data.position.direction);
+        }
+        socket.send(JSON.stringify({move: [currentPlayer.pos.x, currentPlayer.pos.y, currentPlayer.__DIRECTION__]}));
       }
       if (data.positions) {
         if (data.positions[myId]) {
@@ -46,6 +49,9 @@ var game = {
             othersPlayer[p].pos.x = me.Math.clamp(position.x, othersPlayer[p].minX, othersPlayer[p].maxX);
             othersPlayer[p].pos.y = me.Math.clamp(position.y, othersPlayer[p].minY, othersPlayer[p].maxY);
           } else if (othersPlayer[p] && p !== myId) {
+            if (othersPlayer[p].__DIRECTION__ !== position.direction) {
+              rotateTank(othersPlayer[p], position.direction);
+            }
             othersPlayer[p].pos.x = me.Math.clamp(position.x, othersPlayer[p].minX, othersPlayer[p].maxX);
             othersPlayer[p].pos.y = me.Math.clamp(position.y, othersPlayer[p].minY, othersPlayer[p].maxY);
           }
@@ -136,7 +142,7 @@ me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
   me.Math.clamp(currentPlayer.pos.x, currentPlayer.minX, currentPlayer.maxX);
 
   if (socket && socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify({move: [currentPlayer.pos.x, currentPlayer.pos.y]}));
+    socket.send(JSON.stringify({move: [currentPlayer.pos.x, currentPlayer.pos.y, currentPlayer.__DIRECTION__]}));
   }
 
 });

@@ -17,6 +17,7 @@ WSCONS = set() # emit to all
 class Position:
     x: float = 100
     y: float = 100
+    direction: str = "down"
 
 
 @dataclass
@@ -28,9 +29,9 @@ class Player:
 
     def to_dict(self, you=None):
         if you:
-            return dict(hp=self.hp, x=self.pos.x, y=self.pos.y, nick="YOU")
+            return dict(hp=self.hp, x=self.pos.x, y=self.pos.y, direction=self.pos.direction, nick="YOU")
         else:
-            return dict(hp=self.hp, x=self.pos.x, y=self.pos.y, nick=self.nick)
+            return dict(hp=self.hp, x=self.pos.x, y=self.pos.y, direction=self.pos.direction, nick=self.nick)
 
 
 async def generate_id():
@@ -53,7 +54,7 @@ async def init(nick, ws):
     id_ = await generate_id()
     if nick is None:
         nick = f"p{str(id_)[:5]}"
-    PLAYERS[id_] = Player(nick=nick, pos=Position(x=100, y=100), ws=ws)
+    PLAYERS[id_] = Player(nick=nick, pos=Position(x=100, y=100, direction="down"), ws=ws)
     return id_
 
 
@@ -61,6 +62,7 @@ async def pos(id_, new_pos):
     # TODO: validate move here
     PLAYERS[id_].pos.x = new_pos[0]
     PLAYERS[id_].pos.y = new_pos[1]
+    PLAYERS[id_].pos.direction = new_pos[2]
 
 
 async def accept(ws, path):
