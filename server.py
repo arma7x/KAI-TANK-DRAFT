@@ -63,7 +63,11 @@ async def pos(id_, new_pos):
 
 
 async def accept(ws, path):
+    nick_check = re.compile("[A-Za-z0-9]+").match
     nick = json.loads(await ws.recv()).get("nick")
+    if not nick_check(nick):
+        await ws.send('{"error": "Invalid nick"}')
+        return
     id_ = await init(nick)
     async for message in ws:
         await ws.send(json.dumps({"id": id_, "others": await get_others(id_)}))
@@ -78,26 +82,24 @@ async def accept(ws, path):
     PLAYERS.pop(id_)
 
 
-if __name__ != "__main__":
-    sys.exit(0)
+if __name__ == "__main__":
+    if len(sys.argv) not in (1, 2):
+        print("Invalid number of command line arguments", file=sys.stderr)
+        sys.exit(1)
 
-if len(sys.argv) not in (1, 2):
-    print("Invalid number of command line arguments", file=sys.stderr)
-    sys.exit(1)
+    bind_addr = "/home/shangul/.tank.sock"
+    if len(sys.argv) == 2:
+        bind_addr = sys.argv[1]
 
-bind_addr = "/home/shangul/.tank.sock"
-if len(sys.argv) == 2:
-    bind_addr = sys.argv[1]
-
-if bind_addr.startswith("/"):
-    asyncio.get_event_loop().run_until_complete(
-        websockets.unix_serve(accept, bind_addr)
-    )
-else:
-    bind_addr = bind_addr.split(":")
-    ip = bind_addr[0] or "127.0.0.1"
-    port = int(bind_addr[1])
-    asyncio.get_event_loop().run_until_complete(
-        websockets.serve(accept, ip, port)
-    )
-asyncio.get_event_loop().run_forever()
+    if bind_addr.startswith("/"):
+        asyncio.get_event_loop().run_until_complete(
+            websockets.unix_serve(accept, bind_addr)
+        )
+    else:
+        bind_addr = bind_addr.split(":")
+        ip = bind_addr[0] or "127.0.0.1"
+        port = int(bind_addr[1])
+        asyncio.get_event_loop().run_until_complete(
+            websockets.serve(accept, ip, port)
+        )
+    asyncio.get_event_loop().run_forever()
