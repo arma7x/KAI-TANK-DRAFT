@@ -7,8 +7,11 @@ from dataclasses import dataclass
 
 import websockets
 
+from websockets import WebSocketServerProtocol
+
 PLAYERS = dict()
 
+WSCONS = set() # emit to all
 
 @dataclass
 class Position:
@@ -18,6 +21,7 @@ class Position:
 
 @dataclass
 class Player:
+    ws: WebSocketServerProtocol # send data to self conn
     pos: Position
     hp: float = 100
     nick: str = ""
@@ -36,24 +40,20 @@ async def generate_id():
     return id_
 
 
-async def get_others(id_=None):
+async def get_positions():
     global PLAYERS
-    if id_ is None:
-        return [PLAYERS[pl_id].to_dict() for pl_id in PLAYERS]
-    else:
-        return [
-            PLAYERS[pl_id].to_dict(True)
-            if pl_id == id_
-            else PLAYERS[pl_id].to_dict()
-            for pl_id in PLAYERS
-        ]
+    positions = dict()
+    for pl_id, val in PLAYERS.items():
+      positions[pl_id] = val.to_dict()
+    return positions
 
 
-async def init(nick):
+async def init(nick, ws):
+    WSCONS.add(ws)
     id_ = await generate_id()
     if nick is None:
         nick = f"p{str(id_)[:5]}"
-    PLAYERS[id_] = Player(nick=nick, pos=Position(x=100, y=100))
+    PLAYERS[id_] = Player(nick=nick, pos=Position(x=100, y=100), ws=ws)
     return id_
 
 
@@ -69,18 +69,22 @@ async def accept(ws, path):
     if nick and not nick_check(nick):
         await ws.send('{"error": "Invalid nick"}')
         return
-    id_ = await init(nick)
+    id_ = await init(nick, ws)
+    await ws.send(json.dumps({"init": id_, "position": PLAYERS[id_].to_dict()}))
     async for message in ws:
-        await ws.send(json.dumps({"id": id_, "others": await get_others(id_)}))
+        # await ws.send(json.dumps({"id": id_, "positions": await get_positions()}))
         message = json.loads(message)
         if message.get("bye") == "BYE":
             break
 
-        new_pos = message.get("pos")
+        new_pos = message.get("move")
         if new_pos:
             await pos(id_, new_pos)
+            for con in WSCONS:
+              await con.send(json.dumps({"positions": await get_positions()}))
 
     PLAYERS.pop(id_)
+    WSCONS.remove(ws)
 
 
 if __name__ == "__main__":

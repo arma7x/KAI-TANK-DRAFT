@@ -1,7 +1,7 @@
 const BULLET_SIZE = 4;
 var myId = null;
 var currentPlayer = null;
-var others = null;
+var othersPlayer = {};
 var socket = null;
 
 
@@ -16,6 +16,45 @@ var game = {
     me.state.set(me.state.PLAY, this.playScreen);
 
     me.state.change(me.state.PLAY);
+
+    let host = "shangul.de1.hashbang.sh"
+    if (document.location.host != host)
+      host = "ws://0.0.0.0:3000"
+    else
+      host = "wss://shangul.de1.hashbang.sh/server"
+    socket = new WebSocket(host);
+    socket.onmessage = evt => {
+      let data = JSON.parse(evt.data);
+      if (data.init) {
+        myId = data.init
+        currentPlayer = me.game.world.addChild(me.pool.pull("greentank"));
+        currentPlayer.pos.x = me.Math.clamp(data.position.x, currentPlayer.minX, currentPlayer.maxX);
+        currentPlayer.pos.y = me.Math.clamp(data.position.y, currentPlayer.minY, currentPlayer.maxY);
+        socket.send(JSON.stringify({move: [currentPlayer.pos.x, currentPlayer.pos.y]}));
+      }
+      if (data.positions) {
+        if (data.positions[myId]) {
+          var position = data.positions[myId];
+          currentPlayer.pos.x = me.Math.clamp(position.x, currentPlayer.minX, currentPlayer.maxX);
+          currentPlayer.pos.y = me.Math.clamp(position.y, currentPlayer.minY, currentPlayer.maxY);
+        }
+        for (var p in data.positions) {
+          p = parseInt(p)
+          var position = data.positions[p];
+          if (othersPlayer[p] == null && p !== myId) {
+            othersPlayer[p] = me.game.world.addChild(me.pool.pull("greentank"));
+            othersPlayer[p].pos.x = me.Math.clamp(position.x, othersPlayer[p].minX, othersPlayer[p].maxX);
+            othersPlayer[p].pos.y = me.Math.clamp(position.y, othersPlayer[p].minY, othersPlayer[p].maxY);
+          } else if (othersPlayer[p] && p !== myId) {
+            othersPlayer[p].pos.x = me.Math.clamp(position.x, othersPlayer[p].minX, othersPlayer[p].maxX);
+            othersPlayer[p].pos.y = me.Math.clamp(position.y, othersPlayer[p].minY, othersPlayer[p].maxY);
+          }
+        }
+      }
+    };
+    socket.onopen = () => {
+      socket.send(JSON.stringify({ping: true}));
+    }
   },
   onload: function () {
     if (!me.video.init(240, 320, {parent: document.body, scale: "auto", renderer: me.video.CANVAS})) {
@@ -25,32 +64,13 @@ var game = {
 
     me.audio.init("ogg");
     me.loader.preload(game.resources, this.loaded.bind(this));
-    socket = new WebSocket("wss://shangul.de1.hashbang.sh/server");
-    socket.onmessage = evt => {
-      let message = JSON.parse(evt.data);
-      if (myId === null)
-        myId = message.id;
-      others = message.others || others;
-    };
   },
 };
 
 
 game.PlayScreen = me.Stage.extend({
   onResetEvent: function() {
-    currentPlayer = me.game.world.addChild(me.pool.pull("greentank"));
     me.game.world.addChild(new me.ColorLayer("background", "#A00"), 0);
-    var _t = this;
-    this.timer = me.timer.setInterval(function() {
-      if (!others) return;
-      others
-        .filter(other => Boolean(other))
-        .map(other => new me.Entity(other.x, other.y, {width: 24, height: 24, image: "greentank"}))
-        .forEach(entity => {
-          me.game.world.addChild(entity);
-        });
-    }, 10);
-    
     me.input.bindKey(me.input.KEY.LEFT, "left");
     me.input.bindKey(me.input.KEY.RIGHT, "right");
     me.input.bindKey(me.input.KEY.UP, "up");
@@ -83,6 +103,36 @@ me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
     const b = me.game.world.addChild(me.pool.pull("bullet", bX, bY))
     b.__DIRECTION__ = bD;
   }
+
+  if (action === "left") {
+    if (currentPlayer.__DIRECTION__ !== 'left') {
+      rotateTank(currentPlayer, 'left');
+    } else
+      currentPlayer.pos.x -= currentPlayer.vel * time / 1000;
+  } else if (action === "right"){
+    if (currentPlayer.__DIRECTION__ !== 'right') {
+      rotateTank(currentPlayer, 'right');
+    } else
+      currentPlayer.pos.x += currentPlayer.vel * time / 1000;
+  } else if (action === "up") {
+    if (currentPlayer.__DIRECTION__ !== 'up') {
+      rotateTank(currentPlayer, 'up');
+    } else
+      currentPlayer.pos.y -= currentPlayer.vel * time / 1000;
+  } else if (action === "down") {
+    if (currentPlayer.__DIRECTION__ !== 'down') {
+      rotateTank(currentPlayer, 'down');
+    } else
+      currentPlayer.pos.y += currentPlayer.vel * time / 1000;
+  }
+
+  me.Math.clamp(currentPlayer.pos.y, currentPlayer.minY, currentPlayer.maxY);
+  me.Math.clamp(currentPlayer.pos.x, currentPlayer.minX, currentPlayer.maxX);
+
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({move: [currentPlayer.pos.x, currentPlayer.pos.y]}));
+  }
+
 });
 
 game.Tank = me.Sprite.extend({
@@ -104,33 +154,6 @@ game.Tank = me.Sprite.extend({
   },
   update: function(time) {
     this._super(me.Sprite, "update", [time]);
-    if (me.input.isKeyPressed("left")) {
-      if (this.__DIRECTION__ !== 'left') {
-        rotateTank(this, 'left');
-      } else
-        this.pos.x -= this.vel * time / 1000;
-    } else if (me.input.isKeyPressed("right")){
-      if (this.__DIRECTION__ !== 'right') {
-        rotateTank(this, 'right');
-      } else
-        this.pos.x += this.vel * time / 1000;
-    } else if (me.input.isKeyPressed("up")) {
-      if (this.__DIRECTION__ !== 'up') {
-        rotateTank(this, 'up');
-      } else
-        this.pos.y -= this.vel * time / 1000;
-    } else if (me.input.isKeyPressed("down")) {
-      if (this.__DIRECTION__ !== 'down') {
-        rotateTank(this, 'down');
-      } else
-        this.pos.y += this.vel * time / 1000;
-    }
-
-    this.pos.y = me.Math.clamp(this.pos.y, this.minY, this.maxY);
-    this.pos.x = me.Math.clamp(this.pos.x, this.minX, this.maxX);
-    if (socket && socket.readyState === WebSocket.OPEN)
-      socket.send(JSON.stringify({pos: [this.pos.x, this.pos.y]}));
-
     return true;
   }
 });
