@@ -36,11 +36,14 @@ var game = {
         socket.send(JSON.stringify({move: [currentPlayer.pos.x, currentPlayer.pos.y, currentPlayer.__DIRECTION__]}));
       }
       if (data.positions) {
-        if (data.positions[myId]) {
-          var position = data.positions[myId];
-          currentPlayer.pos.x = me.Math.clamp(position.x, currentPlayer.minX, currentPlayer.maxX);
-          currentPlayer.pos.y = me.Math.clamp(position.y, currentPlayer.minY, currentPlayer.maxY);
-        }
+        //if (data.positions[myId]) {
+          //var position = data.positions[myId];
+          //currentPlayer.pos.x = me.Math.clamp(position.x, currentPlayer.minX, currentPlayer.maxX);
+          //currentPlayer.pos.y = me.Math.clamp(position.y, currentPlayer.minY, currentPlayer.maxY);
+          //if (currentPlayer.__DIRECTION__ !== position.direction) {
+            //rotateTank(currentPlayer, position.direction);
+          //}
+        //}
         for (var p in data.positions) {
           p = parseInt(p)
           var position = data.positions[p];
