@@ -1,12 +1,12 @@
 syntax = "proto2";
 
 
-Message Position {
+message Position {
   required float x = 1;
   required float y = 2;
 }
 
-Messasge Player {
+message Player {
   required string nick = 1;
   required Position pos = 2;
   required float hp = 3;
@@ -19,14 +19,14 @@ Messasge Player {
   required Direction dir = 4;
 }
 
-Message Voice { 
+message Voice { 
   required bytes voicedata = 1;
 }
 
-Message Movement {
+message Movement {
   required Position pos = 1;
 }
 
-Message InfoBroadcast {
+message InfoBroadcast {
   repeated Player players = 1;
 }
