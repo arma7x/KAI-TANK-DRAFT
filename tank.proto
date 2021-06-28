@@ -19,6 +19,10 @@ message Player {
   required Direction dir = 4;
 }
 
+message NickSelection {
+  optional string nick = 1;
+}
+
 message Voice { 
   required bytes voicedata = 1;
 }
