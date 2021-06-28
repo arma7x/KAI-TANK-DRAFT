@@ -1,0 +1,32 @@
+syntax = "proto2";
+
+
+Message Position {
+  required float x = 1;
+  required float y = 2;
+}
+
+Messasge Player {
+  required string nick = 1;
+  required Position pos = 2;
+  required float hp = 3;
+  enum Direction {
+    UP = 0;
+    DOWN = 1;
+    RIGHT = 2;
+    LEFT = 3;
+  }
+  required Direction dir = 4;
+}
+
+Message Voice { 
+  required bytes voicedata = 1;
+}
+
+Message Movement {
+  required Position pos = 1;
+}
+
+Message InfoBroadcast {
+  repeated Player players = 1;
+}
