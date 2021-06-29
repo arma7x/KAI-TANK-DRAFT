@@ -1,6 +1,13 @@
 syntax = "proto2";
 
 
+enum Direction {
+  UP = 0;
+  DOWN = 1;
+  RIGHT = 2;
+  LEFT = 3;
+}
+
 message Position {
   required float x = 1;
   required float y = 2;
@@ -10,12 +17,6 @@ message Player {
   required string nick = 1;
   required Position pos = 2;
   required float hp = 3;
-  enum Direction {
-    UP = 0;
-    DOWN = 1;
-    RIGHT = 2;
-    LEFT = 3;
-  }
   required Direction dir = 4;
 }
 
@@ -29,8 +30,22 @@ message Voice {
 
 message Movement {
   required Position pos = 1;
+  optional Direction dir = 2;
 }
 
 message InfoBroadcast {
-  repeated Player players = 1;
+  map<fixed32, Player> players = 1;
+}
+
+message Disconnect {
+  required fixed32 id = 1;
+}
+
+message Init {
+  required Position pos = 1;
+  required fixed32 id = 2;
+}
+
+message ErrorMessage {
+  required string msg = 1;
 }

@@ -1,37 +1,44 @@
 import asyncio
-import json
 import random
 import sys
 import re
+import json
+from base64 import b64encode, b64decode
+from enum import Enum
 from dataclasses import dataclass
 
 import websockets
+import tank_pb2
 
-from websockets import WebSocketServerProtocol
 
 PLAYERS = dict()
 
-WSCONS = set() # emit to all
+class Direction(Enum):
+    UP = 0
+    DOWN = 1
+    RIGHT = 2
+    LEFT = 3
 
 @dataclass
 class Position:
     x: float = 100
     y: float = 100
-    direction: str = "down"
 
 
 @dataclass
 class Player:
-    ws: WebSocketServerProtocol # send data to self conn
+    socket: websockets.WebSocketServerProtocol
     pos: Position
     hp: float = 100
     nick: str = ""
+    dir_: Direction = Direction.UP
 
-    def to_dict(self, you=None):
+    def to_pb(self, you=None):
+        pos = tank_pb2.Position(x=self.pos.x, y=self.pos.y)
+        pl = tank_pb2.Player(hp=self.hp, pos=pos, nick=self.nick, dir=self.dir_.value)
         if you:
-            return dict(hp=self.hp, x=self.pos.x, y=self.pos.y, direction=self.pos.direction, nick="YOU")
-        else:
-            return dict(hp=self.hp, x=self.pos.x, y=self.pos.y, direction=self.pos.direction, nick=self.nick)
+            pl.nick = "YOU"
+        return pl
 
 
 async def generate_id():
@@ -41,20 +48,19 @@ async def generate_id():
     return id_
 
 
-async def get_positions():
+async def get_positions(pl_id=None):
     global PLAYERS
-    positions = dict()
-    for pl_id, val in PLAYERS.items():
-      positions[pl_id] = val.to_dict()
+    positions = { id_:pl.to_pb() for (id_, pl) in PLAYERS }
+    if pl_id:
+        positions[pl_id].nick = "YOU"
     return positions
 
 
 async def init(nick, ws):
-    WSCONS.add(ws)
     id_ = await generate_id()
     if nick is None:
         nick = f"p{str(id_)[:5]}"
-    PLAYERS[id_] = Player(nick=nick, pos=Position(x=100, y=100, direction="down"), ws=ws)
+    PLAYERS[id_] = Player(nick=nick, pos=Position(x=100, y=100), socket=ws)
     return id_
 
 
@@ -62,33 +68,64 @@ async def pos(id_, new_pos):
     # TODO: validate move here
     PLAYERS[id_].pos.x = new_pos[0]
     PLAYERS[id_].pos.y = new_pos[1]
-    PLAYERS[id_].pos.direction = new_pos[2]
+    # TODO: Check and see if it's a valid dir
+    new_pos[2] = new_pos[2].upper()
+    if new_pos[2] not in {"UP", "DOWN", "RIGHT", "LEFT"}:
+        raise ValueError(f"Invalid direction: {new_pos[2]}")
+    
+    PLAYERS[id_].dir_ = getattr(Direction, new_pos[2])
 
+# Refer to PROTOCOL.md for message_type
+
+async def encode_message(message_type, message):
+    return message_type + b64encode(message.SerializeToString())
+
+async def decode_message(s):
+    message_type = s[0]
+    content = s[1:]
+
+    if message_type == "0":
+        return "0", tank_pb2.Movement.FromString(b64decode(content))
+    if message_type == "1":
+        return "1", tank_pb2.Voice.FromString(b64decode(content))
+    if message_type == "2":
+        return "2", tank_pb2.NickSelection.FromString(b64decode(content))
+
+    raise ValueError(f"Invalid message type: {message_type}")
 
 async def accept(ws, path):
     nick_check = re.compile("[A-Za-z0-9]+").match
-    nick = json.loads(await ws.recv()).get("nick")
+    nick = None
+    message = await decode_message(await ws.recv())
+    if type(message) == tank_pb2.NickSelection:
+        nick = message.nick
     if nick and not nick_check(nick):
-        await ws.send('{"error": "Invalid nick"}')
+        err = tank_pb2.ErrorMessage("Nick may contain only alphanumeric characters")
+        await ws.send(await encode_message("4", err))
         return
+    if nick and len(nick) > 12:
+        err = tank_pb2.ErrorMessage("Nick must be 12 characters or less")
+        await ws.send(await encode_message("4", err))
+        return
+
     id_ = await init(nick, ws)
-    await ws.send(json.dumps({"init": id_, "position": PLAYERS[id_].to_dict()}))
+    init_message = tank_pb2.Init(id=id_)
+    init_message.pos.x = PLAYERS[id_].pos.x
+    init_message.pos.y = PLAYERS[id_].pos.y
+    await ws.send(await encode_message("2", init_message))
     async for message in ws:
         # await ws.send(json.dumps({"id": id_, "positions": await get_positions()}))
-        message = json.loads(message)
-        if message.get("bye") == "BYE":
-            break
-
-        new_pos = message.get("move")
-        if new_pos:
-            await pos(id_, new_pos)
-            for con in WSCONS:
-              await con.send(json.dumps({"positions": await get_positions()}))
+        t, message = await encode_message(await ws.recv())
+        if t == "0":
+            await pos(id_, message)
+            info_message = tank_pb2.InfoBroadcast()
+            info_message.players = await get_positions(id_) 
+            for _, player in PLAYERS.items():
+                await player.socket.send(await encode_message("0", info_message))
 
     PLAYERS.pop(id_)
-    WSCONS.remove(ws)
-    for con in WSCONS:
-      await con.send(json.dumps({"dc": id_}))
+    for player in PLAYERS.values():
+      await player.socket.send(await encode_message("3", tank_pb2.Disconnect(id=id_)))
 
 
 if __name__ == "__main__":
