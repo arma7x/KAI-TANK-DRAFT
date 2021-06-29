@@ -127,7 +127,12 @@ async def accept(ws, path):
     for player in PLAYERS.values():
       await player.socket.send(await encode_message("3", tank_pb2.Disconnect(id=id_)))
 
-
+async def periodic():
+    while True:
+        for con in WSCONS:
+          await con.send(json.dumps({"positions": await get_positions()}))
+        await asyncio.sleep(0.2)
+        
 if __name__ == "__main__":
     if len(sys.argv) not in (1, 2):
         print("Invalid number of command line arguments", file=sys.stderr)
@@ -148,4 +153,5 @@ if __name__ == "__main__":
         asyncio.get_event_loop().run_until_complete(
             websockets.serve(accept, ip, port)
         )
+    # asyncio.get_event_loop().run_until_complete(asyncio.get_event_loop().create_task(periodic()))
     asyncio.get_event_loop().run_forever()

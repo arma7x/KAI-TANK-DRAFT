@@ -1,4 +1,6 @@
 const BULLET_SIZE = 4;
+const WIDTH = 400, HEIGHT = 400;
+
 var myId = null;
 var currentPlayer = null;
 var othersPlayer = {};
@@ -10,11 +12,11 @@ var game = {
     { name: "greentank", type: "image", "src": "tank-green.png",  }
   ],
   loaded: function() {
+    me.game.world.resize(WIDTH, HEIGHT);
     me.pool.register("greentank", game.Tank);
     me.pool.register("bullet", game.Bullet);
     this.playScreen = new game.PlayScreen();
     me.state.set(me.state.PLAY, this.playScreen);
-
     me.state.change(me.state.PLAY);
 
     let host = "shangul.de1.hashbang.sh"
@@ -33,14 +35,18 @@ var game = {
         if (currentPlayer.__DIRECTION__ !== data.position.direction) {
           rotateTank(currentPlayer, data.position.direction);
         }
+        follow(currentPlayer, currentPlayer.pos.x, currentPlayer.pos.y)
         socket.send(JSON.stringify({move: [currentPlayer.pos.x, currentPlayer.pos.y, currentPlayer.__DIRECTION__]}));
       }
       if (data.positions) {
-        if (data.positions[myId]) {
-          var position = data.positions[myId];
-          currentPlayer.pos.x = me.Math.clamp(position.x, currentPlayer.minX, currentPlayer.maxX);
-          currentPlayer.pos.y = me.Math.clamp(position.y, currentPlayer.minY, currentPlayer.maxY);
-        }
+        //if (data.positions[myId]) {
+          //var position = data.positions[myId];
+          //currentPlayer.pos.x = me.Math.clamp(position.x, currentPlayer.minX, currentPlayer.maxX);
+          //currentPlayer.pos.y = me.Math.clamp(position.y, currentPlayer.minY, currentPlayer.maxY);
+          //if (currentPlayer.__DIRECTION__ !== position.direction) {
+            //rotateTank(currentPlayer, position.direction);
+          //}
+        //}
         for (var p in data.positions) {
           p = parseInt(p)
           var position = data.positions[p];
@@ -116,35 +122,6 @@ me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
     b.__DIRECTION__ = bD;
   }
 
-  if (action === "left") {
-    if (currentPlayer.__DIRECTION__ !== 'left') {
-      rotateTank(currentPlayer, 'left');
-    } else
-      currentPlayer.pos.x -= currentPlayer.vel * time / 1000;
-  } else if (action === "right"){
-    if (currentPlayer.__DIRECTION__ !== 'right') {
-      rotateTank(currentPlayer, 'right');
-    } else
-      currentPlayer.pos.x += currentPlayer.vel * time / 1000;
-  } else if (action === "up") {
-    if (currentPlayer.__DIRECTION__ !== 'up') {
-      rotateTank(currentPlayer, 'up');
-    } else
-      currentPlayer.pos.y -= currentPlayer.vel * time / 1000;
-  } else if (action === "down") {
-    if (currentPlayer.__DIRECTION__ !== 'down') {
-      rotateTank(currentPlayer, 'down');
-    } else
-      currentPlayer.pos.y += currentPlayer.vel * time / 1000;
-  }
-
-  me.Math.clamp(currentPlayer.pos.y, currentPlayer.minY, currentPlayer.maxY);
-  me.Math.clamp(currentPlayer.pos.x, currentPlayer.minX, currentPlayer.maxX);
-
-  if (socket && socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify({move: [currentPlayer.pos.x, currentPlayer.pos.y, currentPlayer.__DIRECTION__]}));
-  }
-
 });
 
 game.Tank = me.Sprite.extend({
@@ -157,21 +134,52 @@ game.Tank = me.Sprite.extend({
       }
     ]);
     this.__DIRECTION__ = 'down';
-    this.scale(0.75, 0.75);
+    this.scale(0.7, 0.7);
     this.vel = 65;
     this.minX = (this.width / 2);
-    this.maxX = me.game.viewport.width - (this.height / 2);
+    this.maxX = WIDTH - (this.height / 2);
     this.minY = (this.height / 2);
-    this.maxY = me.game.viewport.height - (this.height / 2);
+    this.maxY = HEIGHT - (this.height / 2);
   },
   update: function(time) {
     this._super(me.Sprite, "update", [time]);
+
+    var newX = this.pos.x, newY = this.pos.y;
+    const oldX = this.pos.x, oldY = this.pos.y;
+    if (me.input.isKeyPressed("left")) {
+      if (this.__DIRECTION__ !== 'left') {
+        rotateTank(this, 'left');
+      } else
+        newX -= this.vel * time / 1000;
+    } else if (me.input.isKeyPressed("right")) {
+      if (this.__DIRECTION__ !== 'right') {
+        rotateTank(this, 'right');
+      } else
+        newX += this.vel * time / 1000;
+    } else if (me.input.isKeyPressed("up")) {
+      if (this.__DIRECTION__ !== 'up') {
+        rotateTank(this, 'up');
+      } else
+        newY -= this.vel * time / 1000;
+    } else if (me.input.isKeyPressed("down")) {
+      if (this.__DIRECTION__ !== 'down') {
+        rotateTank(this, 'down');
+      } else
+        newY += this.vel * time / 1000;
+    }
+    if (newX !== oldX || newY !== oldY) {
+      this.pos.x = me.Math.clamp(newX, this.minX, this.maxX);
+      this.pos.y = me.Math.clamp(newY, this.minY, this.maxY);
+      socket.send(JSON.stringify({move: [this.pos.x, this.pos.y, this.__DIRECTION__]}));
+      follow(this, oldX, oldY);
+    }
+
     return true;
   }
 });
 
 game.Bullet = me.Entity.extend({
-    init: function (x, y) {
+    init : function (x, y) {
         this._super(me.Entity, "init", [x, y, { width: BULLET_SIZE, height: BULLET_SIZE }]);
         this.vel = 250;
         this.body.collisionType = me.collision.types.PROJECTILE_OBJECT;
@@ -190,11 +198,11 @@ game.Bullet = me.Entity.extend({
         this.alwaysUpdate = true;
     },
 
-    update: function (time) {
+    update : function (time) {
       if (this.__DIRECTION__) {
         if (this.__DIRECTION__ === 'down') {
           this.pos.y += this.vel * time / 1000;
-          if (this.pos.y + this.height >= me.game.viewport.height) {
+          if (this.pos.y + this.height >= HEIGHT) {
               me.game.world.removeChild(this);
           }
         } else if (this.__DIRECTION__ === 'up') {
@@ -204,7 +212,7 @@ game.Bullet = me.Entity.extend({
           }
         } else if (this.__DIRECTION__ === 'right') {
           this.pos.x += this.vel * time / 1000;
-          if (this.pos.x + this.width >= me.game.viewport.width) {
+          if (this.pos.x + this.width >= WIDTH) {
               me.game.world.removeChild(this);
           }
         } else if (this.__DIRECTION__ === 'left') {
@@ -218,6 +226,26 @@ game.Bullet = me.Entity.extend({
       return true;
     }
 });
+
+function follow(plyr, oldX, oldY) {
+  const diffX = plyr.pos.x - oldX;
+  if (plyr.pos.x > 120 && plyr.pos.x >= oldX && plyr.pos.x < (WIDTH - 120)) {
+    me.game.viewport.move(diffX, 0);
+  } else if (plyr.pos.x > 120 && plyr.pos.x <= oldX && plyr.pos.x < (WIDTH - 120)) {
+    if (me.game.viewport.left > 0) {
+      me.game.viewport.move(diffX, 0);
+    }
+  }
+  const diffY = plyr.pos.y - oldY;
+  if (plyr.pos.y > 160 && plyr.pos.y >= oldY && plyr.pos.y < (HEIGHT - 160)) {
+    me.game.viewport.move(0, diffY);
+  } else if (plyr.pos.y > 160 && plyr.pos.y <= oldY && plyr.pos.y < (HEIGHT - 160)) {
+    if (me.game.viewport.top > 0) {
+      me.game.viewport.move(0, diffY);
+    }
+  }
+  // console.log('CAM x', me.game.viewport.left, 'CAM y', me.game.viewport.top);
+}
 
 function rotateTank(tank, to) {
   const dirAngle = {up: 0, right: 90, down: 180, left: 270};
