@@ -88,6 +88,8 @@ var game = {
         console.log(JSON.stringify(dataP));
       } else if (dataP._type === "0") {
         console.log(dataP);
+      } else if (dataP._type === "3") {
+        console.log(dataP);
       }
       // below is old implemention
       try {

@@ -94,6 +94,11 @@ async def decode_message(s):
 
     # raise ValueError(f"Invalid message type: {message_type}")
 
+async def broadcast(id_):
+    info_message = tank_pb2.InfoBroadcast(players=await get_positions(id_))
+    for _, player in PLAYERS.items():
+        await player.socket.send(await encode_message("0", info_message))
+
 async def accept(ws, path):
     nick_check = re.compile("[A-Za-z0-9]+").match
     nick = None
@@ -115,15 +120,14 @@ async def accept(ws, path):
     init_message.move.pos.y = PLAYERS[id_].pos.y
     init_message.move.dir = PLAYERS[id_].dir_.value
     await ws.send(await encode_message("2", init_message))
+    await broadcast(id_)
     async for message in ws:
         # hit race-condition
         try:
             t, message = await decode_message(await ws.recv())
             if t == "0":
                 await pos(id_, message)
-                info_message = tank_pb2.InfoBroadcast(players=await get_positions(id_))
-                for _, player in PLAYERS.items():
-                    await player.socket.send(await encode_message("0", info_message))
+                await broadcast(id_)
         except:
           pass
 
