@@ -5,7 +5,55 @@ var myId = null;
 var currentPlayer = null;
 var othersPlayer = {};
 var socket = null;
+var pb_root = null;
 
+// TODO regarding encode and decode functions:
+// maybe use hashtable/dictionary instead of if/else?
+
+function encodeMessage(type, msg) {
+  // TODO: verify `msg` here with .verify()
+  let encodedBinary = null;
+  if (type === "0") {
+    if (msg.dir && ![0,1,2,3].includes(msg.dir))
+      throw new Error("Invalid direction");
+    encodedBinary = pb_root.Movement.encode(msg).finish();
+  } else if (type === "1") {
+    encodedBinary = pb_root.Voice.encode(msg).finish();
+  } else if (type === "2") {
+    encodedBinary = pb_root.NickSelection.encode(msg).finish();
+  }
+  if (encodedBinary === null) {
+    throw new Error("Invalid type for encoding");
+  } else {
+    return type + protobuf.util.base64.encode(encodedBinary, 0, encodedBinary.length);
+  }
+}
+
+function decodeMessage(s) {
+  let type = s[0];
+  let content = s.slice(1, s.length);
+  const bufferLength = protobuf.util.base64.length(content);
+  let buffer = new Uint8Array(bufferLength);
+  let message = null;
+  protobuf.util.base64.decode(content, buffer, 0);
+  if (type === "0") {
+    message = pb_root.InfoBroadcast.decode(buffer);
+  } else if (type === "1") {
+    message = pb_root.Voice.decode(buffer);
+  } else if (type === "3") {
+    message = pb_root.Disconnect.decode(buffer);
+  } else if (type === "2") {
+    message = pb_root.Init.decode(buffer);
+  } else if (type === "4") {
+    message = pb_root.ErrorMessage.decode(buffer);
+  }
+  if (message === null) {
+    throw new Error("Invalid type for decoding");
+  } else {
+    message._type = type;
+    return message;
+  }
+}
 
 var game = {
   resources: [
@@ -75,13 +123,17 @@ var game = {
     }
   },
   onload: function () {
-    if (!me.video.init(240, 320, {parent: document.body, scale: "auto", renderer: me.video.CANVAS})) {
-      alert("Your browser does not support HTML5 Canvas :(");
-      return;
-    }
+    pb_root = new protobuf.Root();
+    var _this = this;
+    pb_root.load("tank.proto").then(function(rt) {
+      if (!me.video.init(240, 320, {parent: document.body, scale: "auto", renderer: me.video.CANVAS})) {
+        alert("Your browser does not support HTML5 Canvas :(");
+        return;
+      }
 
-    me.audio.init("ogg");
-    me.loader.preload(game.resources, this.loaded.bind(this));
+      me.audio.init("ogg");
+      me.loader.preload(game.resources, _this.loaded.bind(_this));
+    });
   },
 };
 
