@@ -53,8 +53,8 @@ async def get_positions(pl_id=None):
     positions = dict()
     for key, value in PLAYERS.items():
       positions[key] = value.to_pb()
-    if pl_id:
-        positions[pl_id].nick = "YOU"
+    # if pl_id:
+    #    positions[pl_id].nick = "YOU"
     return positions
 
 

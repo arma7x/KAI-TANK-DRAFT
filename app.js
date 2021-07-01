@@ -78,6 +78,7 @@ var game = {
       if (dataP._type === "2") {
         myId = dataP.id
         currentPlayer = me.game.world.addChild(me.pool.pull("greentank"));
+        currentPlayer.__ID__ = myId
         currentPlayer.pos.x = me.Math.clamp(dataP.move.pos.x, currentPlayer.minX, currentPlayer.maxX);
         currentPlayer.pos.y = me.Math.clamp(dataP.move.pos.y, currentPlayer.minY, currentPlayer.maxY);
         const dir = pb_root.Direction.__proto__[dataP.move.dir].toLowerCase();
@@ -85,11 +86,30 @@ var game = {
           rotateTank(currentPlayer, dir);
         }
         follow(currentPlayer, currentPlayer.pos.x, currentPlayer.pos.y)
-        console.log(JSON.stringify(dataP));
-      } else if (dataP._type === "0") {
-        console.log(dataP);
-      } else if (dataP._type === "3") {
-        console.log(dataP);
+      }
+      if (dataP._type === "0") {
+        for (let p in dataP.players) {
+          p = parseInt(p)
+          const move = dataP.players[p];
+          if (p !== myId) {
+            const dir = pb_root.Direction.__proto__[move.dir].toLowerCase();
+            if (othersPlayer[p] == null) {
+              othersPlayer[p] = me.game.world.addChild(me.pool.pull("greentank"));
+              othersPlayer[p].__ID__ = p
+            }
+            if (othersPlayer[p]) {
+              if (othersPlayer[p].__DIRECTION__ !== dir) {
+                rotateTank(othersPlayer[p], dir);
+              }
+              othersPlayer[p].pos.x = me.Math.clamp(move.pos.x, othersPlayer[p].minX, othersPlayer[p].maxX);
+              othersPlayer[p].pos.y = me.Math.clamp(move.pos.y, othersPlayer[p].minY, othersPlayer[p].maxY);
+            }
+          }
+        }
+      }
+      if (dataP._type === "3") {
+        me.game.world.removeChild(othersPlayer[dataP.id]);
+        delete othersPlayer[dataP.id];
       }
       // below is old implemention
       try {
@@ -97,6 +117,7 @@ var game = {
         if (data.init) {
           myId = data.init
           currentPlayer = me.game.world.addChild(me.pool.pull("greentank"));
+          currentPlayer.__ID__ = myId
           currentPlayer.pos.x = me.Math.clamp(data.position.x, currentPlayer.minX, currentPlayer.maxX);
           currentPlayer.pos.y = me.Math.clamp(data.position.y, currentPlayer.minY, currentPlayer.maxY);
           if (currentPlayer.__DIRECTION__ !== data.position.direction) {
@@ -119,6 +140,7 @@ var game = {
             var position = data.positions[p];
             if (othersPlayer[p] == null && p !== myId) {
               othersPlayer[p] = me.game.world.addChild(me.pool.pull("greentank"));
+              othersPlayer[p].__ID__ = p
               othersPlayer[p].pos.x = me.Math.clamp(position.x, othersPlayer[p].minX, othersPlayer[p].maxX);
               othersPlayer[p].pos.y = me.Math.clamp(position.y, othersPlayer[p].minY, othersPlayer[p].maxY);
             } else if (othersPlayer[p] && p !== myId) {
@@ -218,43 +240,45 @@ game.Tank = me.Sprite.extend({
   update: function(time) {
     this._super(me.Sprite, "update", [time]);
 
-    var newX = this.pos.x, newY = this.pos.y, newDirection = this.__DIRECTION__;
-    const oldX = this.pos.x, oldY = this.pos.y, oldDirection = this.__DIRECTION__;
-    if (me.input.isKeyPressed("left")) {
-      if (this.__DIRECTION__ !== 'left') {
-        newDirection = rotateTank(this, 'left');
-      } else
-        newX -= this.vel * time / 1000;
-    } else if (me.input.isKeyPressed("right")) {
-      if (this.__DIRECTION__ !== 'right') {
-        newDirection = rotateTank(this, 'right');
-      } else
-        newX += this.vel * time / 1000;
-    } else if (me.input.isKeyPressed("up")) {
-      if (this.__DIRECTION__ !== 'up') {
-        newDirection = rotateTank(this, 'up');
-      } else
-        newY -= this.vel * time / 1000;
-    } else if (me.input.isKeyPressed("down")) {
-      if (this.__DIRECTION__ !== 'down') {
-        newDirection = rotateTank(this, 'down');
-      } else
-        newY += this.vel * time / 1000;
-    }
-    if (newX !== oldX || newY !== oldY || oldDirection !== newDirection) {
-      this.pos.x = me.Math.clamp(newX, this.minX, this.maxX);
-      this.pos.y = me.Math.clamp(newY, this.minY, this.maxY);
-      var payload = {
-        pos: {
-          x: this.pos.x,
-          y: this.pos.y
-        },
-        dir: pb_root.Direction[newDirection.toUpperCase()]
+    if (this.__ID__ === myId) {
+      var newX = this.pos.x, newY = this.pos.y, newDirection = this.__DIRECTION__;
+      const oldX = this.pos.x, oldY = this.pos.y, oldDirection = this.__DIRECTION__;
+      if (me.input.isKeyPressed("left")) {
+        if (this.__DIRECTION__ !== 'left') {
+          newDirection = rotateTank(this, 'left');
+        } else
+          newX -= this.vel * time / 1000;
+      } else if (me.input.isKeyPressed("right")) {
+        if (this.__DIRECTION__ !== 'right') {
+          newDirection = rotateTank(this, 'right');
+        } else
+          newX += this.vel * time / 1000;
+      } else if (me.input.isKeyPressed("up")) {
+        if (this.__DIRECTION__ !== 'up') {
+          newDirection = rotateTank(this, 'up');
+        } else
+          newY -= this.vel * time / 1000;
+      } else if (me.input.isKeyPressed("down")) {
+        if (this.__DIRECTION__ !== 'down') {
+          newDirection = rotateTank(this, 'down');
+        } else
+          newY += this.vel * time / 1000;
       }
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(encodeMessage("0", payload));
+      if (newX !== oldX || newY !== oldY || oldDirection !== newDirection) {
+        this.pos.x = me.Math.clamp(newX, this.minX, this.maxX);
+        this.pos.y = me.Math.clamp(newY, this.minY, this.maxY);
+        var payload = {
+          pos: {
+            x: this.pos.x,
+            y: this.pos.y
+          },
+          dir: pb_root.Direction[newDirection.toUpperCase()]
+        }
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          socket.send(encodeMessage("0", payload));
+        }
+        follow(this, oldX, oldY);
       }
-      follow(this, oldX, oldY);
     }
 
     return true;
