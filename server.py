@@ -114,7 +114,6 @@ async def accept(ws, path):
     init_message.pos.y = PLAYERS[id_].pos.y
     await ws.send(await encode_message("2", init_message))
     async for message in ws:
-        # await ws.send(json.dumps({"id": id_, "positions": await get_positions()}))
         t, message = await encode_message(await ws.recv())
         if t == "0":
             await pos(id_, message)
@@ -126,12 +125,6 @@ async def accept(ws, path):
     PLAYERS.pop(id_)
     for player in PLAYERS.values():
       await player.socket.send(await encode_message("3", tank_pb2.Disconnect(id=id_)))
-
-async def periodic():
-    while True:
-        for con in WSCONS:
-          await con.send(json.dumps({"positions": await get_positions()}))
-        await asyncio.sleep(0.2)
         
 if __name__ == "__main__":
     if len(sys.argv) not in (1, 2):
@@ -153,5 +146,4 @@ if __name__ == "__main__":
         asyncio.get_event_loop().run_until_complete(
             websockets.serve(accept, ip, port)
         )
-    # asyncio.get_event_loop().run_until_complete(asyncio.get_event_loop().create_task(periodic()))
     asyncio.get_event_loop().run_forever()
