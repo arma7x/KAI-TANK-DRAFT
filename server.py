@@ -110,8 +110,9 @@ async def accept(ws, path):
 
     id_ = await init(nick, ws)
     init_message = tank_pb2.Init(id=id_)
-    init_message.pos.x = PLAYERS[id_].pos.x
-    init_message.pos.y = PLAYERS[id_].pos.y
+    init_message.move.pos.x = PLAYERS[id_].pos.x
+    init_message.move.pos.y = PLAYERS[id_].pos.y
+    init_message.move.dir = PLAYERS[id_].dir_.value
     await ws.send(await encode_message("2", init_message))
     async for message in ws:
         t, message = await encode_message(await ws.recv())

@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto2',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\ntank.proto\" \n\x08Position\x12\t\n\x01x\x18\x01 \x02(\x02\x12\t\n\x01y\x18\x02 \x02(\x02\"S\n\x06Player\x12\x0c\n\x04nick\x18\x01 \x02(\t\x12\x16\n\x03pos\x18\x02 \x02(\x0b\x32\t.Position\x12\n\n\x02hp\x18\x03 \x02(\x02\x12\x17\n\x03\x64ir\x18\x04 \x02(\x0e\x32\n.Direction\"\x1d\n\rNickSelection\x12\x0c\n\x04nick\x18\x01 \x01(\t\"\x1a\n\x05Voice\x12\x11\n\tvoicedata\x18\x01 \x02(\x0c\";\n\x08Movement\x12\x16\n\x03pos\x18\x01 \x02(\x0b\x32\t.Position\x12\x17\n\x03\x64ir\x18\x02 \x01(\x0e\x32\n.Direction\"v\n\rInfoBroadcast\x12,\n\x07players\x18\x01 \x03(\x0b\x32\x1b.InfoBroadcast.PlayersEntry\x1a\x37\n\x0cPlayersEntry\x12\x0b\n\x03key\x18\x01 \x01(\x07\x12\x16\n\x05value\x18\x02 \x01(\x0b\x32\x07.Player:\x02\x38\x01\"\x18\n\nDisconnect\x12\n\n\x02id\x18\x01 \x02(\x07\"*\n\x04Init\x12\x16\n\x03pos\x18\x01 \x02(\x0b\x32\t.Position\x12\n\n\x02id\x18\x02 \x02(\x07\"\x1b\n\x0c\x45rrorMessage\x12\x0b\n\x03msg\x18\x01 \x02(\t*2\n\tDirection\x12\x06\n\x02UP\x10\x00\x12\x08\n\x04\x44OWN\x10\x01\x12\t\n\x05RIGHT\x10\x02\x12\x08\n\x04LEFT\x10\x03'
+  serialized_pb=b'\n\ntank.proto\" \n\x08Position\x12\t\n\x01x\x18\x01 \x02(\x02\x12\t\n\x01y\x18\x02 \x02(\x02\"S\n\x06Player\x12\x0c\n\x04nick\x18\x01 \x02(\t\x12\x16\n\x03pos\x18\x02 \x02(\x0b\x32\t.Position\x12\n\n\x02hp\x18\x03 \x02(\x02\x12\x17\n\x03\x64ir\x18\x04 \x02(\x0e\x32\n.Direction\"\x1d\n\rNickSelection\x12\x0c\n\x04nick\x18\x01 \x01(\t\"\x1a\n\x05Voice\x12\x11\n\tvoicedata\x18\x01 \x02(\x0c\";\n\x08Movement\x12\x16\n\x03pos\x18\x01 \x02(\x0b\x32\t.Position\x12\x17\n\x03\x64ir\x18\x02 \x02(\x0e\x32\n.Direction\"v\n\rInfoBroadcast\x12,\n\x07players\x18\x01 \x03(\x0b\x32\x1b.InfoBroadcast.PlayersEntry\x1a\x37\n\x0cPlayersEntry\x12\x0b\n\x03key\x18\x01 \x01(\x07\x12\x16\n\x05value\x18\x02 \x01(\x0b\x32\x07.Player:\x02\x38\x01\"\x18\n\nDisconnect\x12\n\n\x02id\x18\x01 \x02(\x07\"+\n\x04Init\x12\n\n\x02id\x18\x01 \x02(\x07\x12\x17\n\x04move\x18\x02 \x02(\x0b\x32\t.Movement\"\x1b\n\x0c\x45rrorMessage\x12\x0b\n\x03msg\x18\x01 \x02(\t*2\n\tDirection\x12\x06\n\x02UP\x10\x00\x12\x08\n\x04\x44OWN\x10\x01\x12\t\n\x05RIGHT\x10\x02\x12\x08\n\x04LEFT\x10\x03'
 )
 
 _DIRECTION = _descriptor.EnumDescriptor(
@@ -53,8 +53,8 @@ _DIRECTION = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=472,
-  serialized_end=522,
+  serialized_start=473,
+  serialized_end=523,
 )
 _sym_db.RegisterEnumDescriptor(_DIRECTION)
 
@@ -239,7 +239,7 @@ _MOVEMENT = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='dir', full_name='Movement.dir', index=1,
-      number=2, type=14, cpp_type=8, label=1,
+      number=2, type=14, cpp_type=8, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -372,16 +372,16 @@ _INIT = _descriptor.Descriptor(
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='pos', full_name='Init.pos', index=0,
-      number=1, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
+      name='id', full_name='Init.id', index=0,
+      number=1, type=7, cpp_type=3, label=2,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='id', full_name='Init.id', index=1,
-      number=2, type=7, cpp_type=3, label=2,
-      has_default_value=False, default_value=0,
+      name='move', full_name='Init.move', index=1,
+      number=2, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -398,7 +398,7 @@ _INIT = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=399,
-  serialized_end=441,
+  serialized_end=442,
 )
 
 
@@ -429,8 +429,8 @@ _ERRORMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=443,
-  serialized_end=470,
+  serialized_start=444,
+  serialized_end=471,
 )
 
 _PLAYER.fields_by_name['pos'].message_type = _POSITION
@@ -440,7 +440,7 @@ _MOVEMENT.fields_by_name['dir'].enum_type = _DIRECTION
 _INFOBROADCAST_PLAYERSENTRY.fields_by_name['value'].message_type = _PLAYER
 _INFOBROADCAST_PLAYERSENTRY.containing_type = _INFOBROADCAST
 _INFOBROADCAST.fields_by_name['players'].message_type = _INFOBROADCAST_PLAYERSENTRY
-_INIT.fields_by_name['pos'].message_type = _POSITION
+_INIT.fields_by_name['move'].message_type = _MOVEMENT
 DESCRIPTOR.message_types_by_name['Position'] = _POSITION
 DESCRIPTOR.message_types_by_name['Player'] = _PLAYER
 DESCRIPTOR.message_types_by_name['NickSelection'] = _NICKSELECTION

@@ -78,13 +78,13 @@ var game = {
       if (dataP._type === "2") {
         myId = dataP.id
         currentPlayer = me.game.world.addChild(me.pool.pull("greentank"));
-        currentPlayer.pos.x = me.Math.clamp(dataP.pos.x, currentPlayer.minX, currentPlayer.maxX);
-        currentPlayer.pos.y = me.Math.clamp(dataP.pos.y, currentPlayer.minY, currentPlayer.maxY);
-        if (currentPlayer.__DIRECTION__ !== dataP.pos.direction) {
-          rotateTank(currentPlayer, dataP.pos.direction);
+        currentPlayer.pos.x = me.Math.clamp(dataP.move.pos.x, currentPlayer.minX, currentPlayer.maxX);
+        currentPlayer.pos.y = me.Math.clamp(dataP.move.pos.y, currentPlayer.minY, currentPlayer.maxY);
+        if (currentPlayer.__DIRECTION__ !== dataP.move.pos.dir) {
+          rotateTank(currentPlayer, dataP.move.pos.dir);
         }
         follow(currentPlayer, currentPlayer.pos.x, currentPlayer.pos.y)
-        console.log(dataP.id);
+        console.log(JSON.stringify(dataP));
       }
       try {
         let data = JSON.parse(evt.data);

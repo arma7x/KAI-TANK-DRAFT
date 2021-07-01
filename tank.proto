@@ -30,7 +30,7 @@ message Voice {
 
 message Movement {
   required Position pos = 1;
-  optional Direction dir = 2;
+  required Direction dir = 2;
 }
 
 message InfoBroadcast {
@@ -42,8 +42,8 @@ message Disconnect {
 }
 
 message Init {
-  required Position pos = 1;
-  required fixed32 id = 2;
+  required fixed32 id = 1;
+  required Movement move = 2;
 }
 
 message ErrorMessage {
