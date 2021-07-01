@@ -80,8 +80,9 @@ var game = {
         currentPlayer = me.game.world.addChild(me.pool.pull("greentank"));
         currentPlayer.pos.x = me.Math.clamp(dataP.move.pos.x, currentPlayer.minX, currentPlayer.maxX);
         currentPlayer.pos.y = me.Math.clamp(dataP.move.pos.y, currentPlayer.minY, currentPlayer.maxY);
-        if (currentPlayer.__DIRECTION__ !== dataP.move.pos.dir) {
-          rotateTank(currentPlayer, dataP.move.pos.dir);
+        const dir = pb_root.Direction.__proto__[dataP.move.dir].toLowerCase();
+        if (currentPlayer.__DIRECTION__ !== dir) {
+          rotateTank(currentPlayer, dir);
         }
         follow(currentPlayer, currentPlayer.pos.x, currentPlayer.pos.y)
         console.log(JSON.stringify(dataP));
