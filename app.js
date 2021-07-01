@@ -86,7 +86,10 @@ var game = {
         }
         follow(currentPlayer, currentPlayer.pos.x, currentPlayer.pos.y)
         console.log(JSON.stringify(dataP));
+      } else if (dataP._type === "0") {
+        console.log(dataP);
       }
+      // below is old implemention
       try {
         let data = JSON.parse(evt.data);
         if (data.init) {
@@ -132,7 +135,7 @@ var game = {
           }
         }
       } catch (e) {
-        console.log(e);
+        // console.log(e);
       }
     };
     socket.onopen = () => {
@@ -239,7 +242,14 @@ game.Tank = me.Sprite.extend({
     if (newX !== oldX || newY !== oldY || oldDirection !== newDirection) {
       this.pos.x = me.Math.clamp(newX, this.minX, this.maxX);
       this.pos.y = me.Math.clamp(newY, this.minY, this.maxY);
-      socket.send(JSON.stringify({move: [this.pos.x, this.pos.y, this.__DIRECTION__]}));
+      var payload = {
+        pos: {
+          x: this.pos.x,
+          y: this.pos.y
+        },
+        dir: pb_root.Direction[newDirection.toUpperCase()]
+      }
+      socket.send(encodeMessage("0", payload));
       follow(this, oldX, oldY);
     }
 

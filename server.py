@@ -50,7 +50,9 @@ async def generate_id():
 
 async def get_positions(pl_id=None):
     global PLAYERS
-    positions = { id_:pl.to_pb() for (id_, pl) in PLAYERS }
+    positions = dict()
+    for key, value in PLAYERS.items():
+      positions[key] = value.to_pb()
     if pl_id:
         positions[pl_id].nick = "YOU"
     return positions
@@ -64,16 +66,15 @@ async def init(nick, ws):
     return id_
 
 
-async def pos(id_, new_pos):
+async def pos(id_, move):
     # TODO: validate move here
-    PLAYERS[id_].pos.x = new_pos[0]
-    PLAYERS[id_].pos.y = new_pos[1]
+    PLAYERS[id_].pos.x = move.pos.x
+    PLAYERS[id_].pos.y = move.pos.y
     # TODO: Check and see if it's a valid dir
-    new_pos[2] = new_pos[2].upper()
-    if new_pos[2] not in {"UP", "DOWN", "RIGHT", "LEFT"}:
-        raise ValueError(f"Invalid direction: {new_pos[2]}")
+    # if move.dir not in {"UP", "DOWN", "RIGHT", "LEFT"}:
+        # raise ValueError(f"Invalid direction: {move.dir}")
     
-    PLAYERS[id_].dir_ = getattr(Direction, new_pos[2])
+    PLAYERS[id_].dir_ = getattr(Direction, Direction(move.dir).name)
 
 # Refer to PROTOCOL.md for message_type
 
@@ -115,15 +116,15 @@ async def accept(ws, path):
     init_message.move.dir = PLAYERS[id_].dir_.value
     await ws.send(await encode_message("2", init_message))
     async for message in ws:
-        t, message = await encode_message(await ws.recv())
+        t, message = await decode_message(await ws.recv())
         if t == "0":
             await pos(id_, message)
-            info_message = tank_pb2.InfoBroadcast()
-            info_message.players = await get_positions(id_) 
+            info_message = tank_pb2.InfoBroadcast(players=await get_positions(id_))
             for _, player in PLAYERS.items():
                 await player.socket.send(await encode_message("0", info_message))
 
     PLAYERS.pop(id_)
+    print(PLAYERS)
     for player in PLAYERS.values():
       await player.socket.send(await encode_message("3", tank_pb2.Disconnect(id=id_)))
         
