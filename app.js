@@ -74,48 +74,64 @@ var game = {
       host = "wss://shangul.de1.hashbang.sh/server"
     socket = new WebSocket(host);
     socket.onmessage = evt => {
-      let data = JSON.parse(evt.data);
-      if (data.init) {
-        myId = data.init
+      let dataP = decodeMessage(evt.data);
+      if (dataP._type === "2") {
+        myId = dataP.id
         currentPlayer = me.game.world.addChild(me.pool.pull("greentank"));
-        currentPlayer.pos.x = me.Math.clamp(data.position.x, currentPlayer.minX, currentPlayer.maxX);
-        currentPlayer.pos.y = me.Math.clamp(data.position.y, currentPlayer.minY, currentPlayer.maxY);
-        if (currentPlayer.__DIRECTION__ !== data.position.direction) {
-          rotateTank(currentPlayer, data.position.direction);
+        currentPlayer.pos.x = me.Math.clamp(dataP.pos.x, currentPlayer.minX, currentPlayer.maxX);
+        currentPlayer.pos.y = me.Math.clamp(dataP.pos.y, currentPlayer.minY, currentPlayer.maxY);
+        if (currentPlayer.__DIRECTION__ !== dataP.pos.direction) {
+          rotateTank(currentPlayer, dataP.pos.direction);
         }
         follow(currentPlayer, currentPlayer.pos.x, currentPlayer.pos.y)
-        socket.send(JSON.stringify({move: [currentPlayer.pos.x, currentPlayer.pos.y, currentPlayer.__DIRECTION__]}));
+        console.log(dataP.id);
       }
-      if (data.positions) {
-        //if (data.positions[myId]) {
-          //var position = data.positions[myId];
-          //currentPlayer.pos.x = me.Math.clamp(position.x, currentPlayer.minX, currentPlayer.maxX);
-          //currentPlayer.pos.y = me.Math.clamp(position.y, currentPlayer.minY, currentPlayer.maxY);
-          //if (currentPlayer.__DIRECTION__ !== position.direction) {
-            //rotateTank(currentPlayer, position.direction);
+      try {
+        let data = JSON.parse(evt.data);
+        if (data.init) {
+          myId = data.init
+          currentPlayer = me.game.world.addChild(me.pool.pull("greentank"));
+          currentPlayer.pos.x = me.Math.clamp(data.position.x, currentPlayer.minX, currentPlayer.maxX);
+          currentPlayer.pos.y = me.Math.clamp(data.position.y, currentPlayer.minY, currentPlayer.maxY);
+          if (currentPlayer.__DIRECTION__ !== data.position.direction) {
+            rotateTank(currentPlayer, data.position.direction);
+          }
+          follow(currentPlayer, currentPlayer.pos.x, currentPlayer.pos.y)
+          socket.send(JSON.stringify({move: [currentPlayer.pos.x, currentPlayer.pos.y, currentPlayer.__DIRECTION__]}));
+        }
+        if (data.positions) {
+          //if (data.positions[myId]) {
+            //var position = data.positions[myId];
+            //currentPlayer.pos.x = me.Math.clamp(position.x, currentPlayer.minX, currentPlayer.maxX);
+            //currentPlayer.pos.y = me.Math.clamp(position.y, currentPlayer.minY, currentPlayer.maxY);
+            //if (currentPlayer.__DIRECTION__ !== position.direction) {
+              //rotateTank(currentPlayer, position.direction);
+            //}
           //}
-        //}
-        for (var p in data.positions) {
-          p = parseInt(p)
-          var position = data.positions[p];
-          if (othersPlayer[p] == null && p !== myId) {
-            othersPlayer[p] = me.game.world.addChild(me.pool.pull("greentank"));
-            othersPlayer[p].pos.x = me.Math.clamp(position.x, othersPlayer[p].minX, othersPlayer[p].maxX);
-            othersPlayer[p].pos.y = me.Math.clamp(position.y, othersPlayer[p].minY, othersPlayer[p].maxY);
-          } else if (othersPlayer[p] && p !== myId) {
-            if (othersPlayer[p].__DIRECTION__ !== position.direction) {
-              rotateTank(othersPlayer[p], position.direction);
+          for (var p in data.positions) {
+            p = parseInt(p)
+            var position = data.positions[p];
+            if (othersPlayer[p] == null && p !== myId) {
+              othersPlayer[p] = me.game.world.addChild(me.pool.pull("greentank"));
+              othersPlayer[p].pos.x = me.Math.clamp(position.x, othersPlayer[p].minX, othersPlayer[p].maxX);
+              othersPlayer[p].pos.y = me.Math.clamp(position.y, othersPlayer[p].minY, othersPlayer[p].maxY);
+            } else if (othersPlayer[p] && p !== myId) {
+              if (othersPlayer[p].__DIRECTION__ !== position.direction) {
+                rotateTank(othersPlayer[p], position.direction);
+              }
+              othersPlayer[p].pos.x = me.Math.clamp(position.x, othersPlayer[p].minX, othersPlayer[p].maxX);
+              othersPlayer[p].pos.y = me.Math.clamp(position.y, othersPlayer[p].minY, othersPlayer[p].maxY);
             }
-            othersPlayer[p].pos.x = me.Math.clamp(position.x, othersPlayer[p].minX, othersPlayer[p].maxX);
-            othersPlayer[p].pos.y = me.Math.clamp(position.y, othersPlayer[p].minY, othersPlayer[p].maxY);
           }
         }
-      }
-      if (data.dc) {
-        if (othersPlayer[data.dc]) {
-          me.game.world.removeChild(othersPlayer[data.dc]);
-          delete othersPlayer[data.dc];
+        if (data.dc) {
+          if (othersPlayer[data.dc]) {
+            me.game.world.removeChild(othersPlayer[data.dc]);
+            delete othersPlayer[data.dc];
+          }
         }
+      } catch (e) {
+        console.log(e);
       }
     };
     socket.onopen = () => {

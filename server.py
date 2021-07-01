@@ -78,7 +78,7 @@ async def pos(id_, new_pos):
 # Refer to PROTOCOL.md for message_type
 
 async def encode_message(message_type, message):
-    return message_type + b64encode(message.SerializeToString())
+    return message_type + b64encode(message.SerializeToString()).decode("utf-8") 
 
 async def decode_message(s):
     message_type = s[0]
@@ -91,7 +91,7 @@ async def decode_message(s):
     if message_type == "2":
         return "2", tank_pb2.NickSelection.FromString(b64decode(content))
 
-    raise ValueError(f"Invalid message type: {message_type}")
+    # raise ValueError(f"Invalid message type: {message_type}")
 
 async def accept(ws, path):
     nick_check = re.compile("[A-Za-z0-9]+").match
