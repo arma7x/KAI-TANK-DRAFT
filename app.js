@@ -196,30 +196,30 @@ game.Tank = me.Sprite.extend({
   update: function(time) {
     this._super(me.Sprite, "update", [time]);
 
-    var newX = this.pos.x, newY = this.pos.y;
-    const oldX = this.pos.x, oldY = this.pos.y;
+    var newX = this.pos.x, newY = this.pos.y, newDirection = this.__DIRECTION__;
+    const oldX = this.pos.x, oldY = this.pos.y, oldDirection = this.__DIRECTION__;
     if (me.input.isKeyPressed("left")) {
       if (this.__DIRECTION__ !== 'left') {
-        rotateTank(this, 'left');
+        newDirection = rotateTank(this, 'left');
       } else
         newX -= this.vel * time / 1000;
     } else if (me.input.isKeyPressed("right")) {
       if (this.__DIRECTION__ !== 'right') {
-        rotateTank(this, 'right');
+        newDirection = rotateTank(this, 'right');
       } else
         newX += this.vel * time / 1000;
     } else if (me.input.isKeyPressed("up")) {
       if (this.__DIRECTION__ !== 'up') {
-        rotateTank(this, 'up');
+        newDirection = rotateTank(this, 'up');
       } else
         newY -= this.vel * time / 1000;
     } else if (me.input.isKeyPressed("down")) {
       if (this.__DIRECTION__ !== 'down') {
-        rotateTank(this, 'down');
+        newDirection = rotateTank(this, 'down');
       } else
         newY += this.vel * time / 1000;
     }
-    if (newX !== oldX || newY !== oldY) {
+    if (newX !== oldX || newY !== oldY || oldDirection !== newDirection) {
       this.pos.x = me.Math.clamp(newX, this.minX, this.maxX);
       this.pos.y = me.Math.clamp(newY, this.minY, this.maxY);
       socket.send(JSON.stringify({move: [this.pos.x, this.pos.y, this.__DIRECTION__]}));
