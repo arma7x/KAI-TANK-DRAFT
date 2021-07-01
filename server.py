@@ -116,15 +116,18 @@ async def accept(ws, path):
     init_message.move.dir = PLAYERS[id_].dir_.value
     await ws.send(await encode_message("2", init_message))
     async for message in ws:
-        t, message = await decode_message(await ws.recv())
-        if t == "0":
-            await pos(id_, message)
-            info_message = tank_pb2.InfoBroadcast(players=await get_positions(id_))
-            for _, player in PLAYERS.items():
-                await player.socket.send(await encode_message("0", info_message))
+        # hit race-condition
+        try:
+            t, message = await decode_message(await ws.recv())
+            if t == "0":
+                await pos(id_, message)
+                info_message = tank_pb2.InfoBroadcast(players=await get_positions(id_))
+                for _, player in PLAYERS.items():
+                    await player.socket.send(await encode_message("0", info_message))
+        except:
+          pass
 
     PLAYERS.pop(id_)
-    print(PLAYERS)
     for player in PLAYERS.values():
       await player.socket.send(await encode_message("3", tank_pb2.Disconnect(id=id_)))
         

@@ -249,7 +249,9 @@ game.Tank = me.Sprite.extend({
         },
         dir: pb_root.Direction[newDirection.toUpperCase()]
       }
-      socket.send(encodeMessage("0", payload));
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(encodeMessage("0", payload));
+      }
       follow(this, oldX, oldY);
     }
 
