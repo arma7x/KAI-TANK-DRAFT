@@ -304,6 +304,7 @@ function rotateTank(tank, to) {
   const x = dirAngle[to] - dirAngle[tank.__DIRECTION__];
   tank.__DIRECTION__ = to;
   tank.rotate(x * Math.PI / 180);
+  return to;
 }
 
 me.device.onReady(function onReady() {
