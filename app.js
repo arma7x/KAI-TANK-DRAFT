@@ -1,8 +1,10 @@
 const BULLET_SIZE = 4;
 const WIDTH = 400, HEIGHT = 400;
+const DEBUG = true;
 
 var myId = null;
 var currentPlayer = null;
+var shadowPlayer = null;
 var othersPlayer = {};
 var socket = null;
 var pb_root = null;
@@ -86,6 +88,18 @@ var game = {
           rotateTank(currentPlayer, dir);
         }
         follow(currentPlayer)
+        if (DEBUG) {
+          shadowPlayer = me.game.world.addChild(me.pool.pull("greentank"));
+          shadowPlayer.body.collisionType = me.collision.types.NO_OBJECT;
+          shadowPlayer.__ID__ = 'DEBUG'
+          shadowPlayer.pos.x = me.Math.clamp(dataP.move.pos.x, shadowPlayer.minX, shadowPlayer.maxX);
+          shadowPlayer.pos.y = me.Math.clamp(dataP.move.pos.y, shadowPlayer.minY, shadowPlayer.maxY);
+          const dir = pb_root.Direction.__proto__[dataP.move.dir].toLowerCase();
+          if (shadowPlayer.__DIRECTION__ !== dir) {
+            rotateTank(shadowPlayer, dir);
+          }
+          follow(shadowPlayer)
+        }
       }
       if (dataP._type === "0") {
         for (let p in dataP.players) {
@@ -104,6 +118,15 @@ var game = {
               othersPlayer[p].pos.x = me.Math.clamp(move.pos.x, othersPlayer[p].minX, othersPlayer[p].maxX);
               othersPlayer[p].pos.y = me.Math.clamp(move.pos.y, othersPlayer[p].minY, othersPlayer[p].maxY);
             }
+          } else if (DEBUG && shadowPlayer && p === myId) {
+            //setTimeout(() => {
+              const dir = pb_root.Direction.__proto__[move.dir].toLowerCase();
+              if (shadowPlayer.__DIRECTION__ !== dir) {
+                rotateTank(shadowPlayer, dir);
+              }
+              shadowPlayer.pos.x = me.Math.clamp(move.pos.x, shadowPlayer.minX, shadowPlayer.maxX);
+              shadowPlayer.pos.y = me.Math.clamp(move.pos.y, shadowPlayer.minY, shadowPlayer.maxY);
+            //}, 250); // stimulate lag
           }
         }
       }
@@ -271,11 +294,12 @@ game.Bullet = me.Entity.extend({
         this.alwaysUpdate = true;
     },
     onCollision: function (res, other) {
-      console.log(2222, other.body.collisionType, me.collision.types.ENEMY_OBJECT);
       if (other.body.collisionType === me.collision.types.ENEMY_OBJECT) {
-        me.game.world.removeChild(other);
-        delete othersPlayer[other.__ID__];
-        return false;
+        if (other.__ID__ !== myId) {
+          me.game.world.removeChild(other);
+          delete othersPlayer[other.__ID__];
+          return false;
+        }
       }
     },
     update : function (time) {
