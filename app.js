@@ -186,6 +186,23 @@ game.Tank = me.Sprite.extend({
     this.maxX = WIDTH - (this.height / 2);
     this.minY = (this.height / 2);
     this.maxY = HEIGHT - (this.height / 2);
+
+    this.body = new me.Body(this);
+    // add a default collision shape
+    this.body.addShape(new me.Rect(0, 0, this.width, this.height));
+    // configure max speed and friction
+    this.body.setMaxVelocity(0, 0);
+    this.body.setFriction(0.4, 0);
+    // enable physic collision (off by default for basic me.Renderable)
+    this.isKinematic = false;
+    this.body.setVelocity(0, 0);
+    this.body.collisionType = me.collision.types.ENEMY_OBJECT;
+  },
+  onCollision: function (res, other) {
+      console.log(1111);
+    if (other.body.collisionType === me.collision.types.ENEMY_OBJECT) {
+      return false;
+    }
   },
   update: function(time) {
     this._super(me.Sprite, "update", [time]);
@@ -230,7 +247,7 @@ game.Tank = me.Sprite.extend({
         follow(this);
       }
     }
-
+    this.body.update();
     return true;
   }
 });
