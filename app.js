@@ -199,9 +199,8 @@ game.Tank = me.Sprite.extend({
     this.body.collisionType = me.collision.types.ENEMY_OBJECT;
   },
   onCollision: function (res, other) {
-      console.log(1111);
     if (other.body.collisionType === me.collision.types.ENEMY_OBJECT) {
-      return false;
+      return true;
     }
   },
   update: function(time) {
@@ -244,10 +243,10 @@ game.Tank = me.Sprite.extend({
         if (socket && socket.readyState === WebSocket.OPEN) {
           socket.send(encodeMessage("0", payload));
         }
-        follow(this);
+        if (!me.collision.check(this))
+          follow(this);
       }
     }
-    this.body.update();
     return true;
   }
 });
@@ -271,7 +270,12 @@ game.Bullet = me.Entity.extend({
         }));
         this.alwaysUpdate = true;
     },
-
+    onCollision: function (res, other) {
+      console.log(2222, other.body.collisionType, me.collision.types.ENEMY_OBJECT);
+      if (other.body.collisionType === me.collision.types.ENEMY_OBJECT) {
+        return false;
+      }
+    },
     update : function (time) {
       if (this.__DIRECTION__) {
         if (this.__DIRECTION__ === 'down') {
