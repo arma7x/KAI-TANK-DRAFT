@@ -85,7 +85,7 @@ var game = {
         if (currentPlayer.__DIRECTION__ !== dir) {
           rotateTank(currentPlayer, dir);
         }
-        follow(currentPlayer, currentPlayer.pos.x, currentPlayer.pos.y)
+        follow(currentPlayer)
       }
       if (dataP._type === "0") {
         for (let p in dataP.players) {
@@ -227,7 +227,7 @@ game.Tank = me.Sprite.extend({
         if (socket && socket.readyState === WebSocket.OPEN) {
           socket.send(encodeMessage("0", payload));
         }
-        follow(this, oldX, oldY);
+        follow(this);
       }
     }
 
@@ -284,24 +284,23 @@ game.Bullet = me.Entity.extend({
     }
 });
 
-function follow(plyr, oldX, oldY) {
-  const diffX = plyr.pos.x - oldX;
-  if (plyr.pos.x > 120 && plyr.pos.x >= oldX && plyr.pos.x < (WIDTH - 120)) {
-    me.game.viewport.move(diffX, 0);
-  } else if (plyr.pos.x > 120 && plyr.pos.x <= oldX && plyr.pos.x < (WIDTH - 120)) {
-    if (me.game.viewport.left > 0) {
-      me.game.viewport.move(diffX, 0);
-    }
+function follow(plyr) {
+
+  var mX = plyr.pos.x - (240 / 2);
+  mX = mX <= (240 / 2) ? mX - 1 : mX;
+  mX = mX <= 0 ? 0 : mX;
+  if ((WIDTH - plyr.pos.x) <= (240 / 2)) {
+    mX = WIDTH - 240
   }
-  const diffY = plyr.pos.y - oldY;
-  if (plyr.pos.y > 160 && plyr.pos.y >= oldY && plyr.pos.y < (HEIGHT - 160)) {
-    me.game.viewport.move(0, diffY);
-  } else if (plyr.pos.y > 160 && plyr.pos.y <= oldY && plyr.pos.y < (HEIGHT - 160)) {
-    if (me.game.viewport.top > 0) {
-      me.game.viewport.move(0, diffY);
-    }
+
+  var mY = plyr.pos.y - (320 / 2);
+  mY = mY <= (320 / 2) ? mY - 1 : mY;
+  mY = mY <= 0 ? 0 : mY;
+  if ((HEIGHT - plyr.pos.y) <= (320 / 2)) {
+    mY = HEIGHT - 320
   }
-  // console.log('CAM x', me.game.viewport.left, 'CAM y', me.game.viewport.top);
+
+  me.game.viewport.moveTo(mX, mY)
 }
 
 function rotateTank(tank, to) {
