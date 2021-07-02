@@ -273,6 +273,8 @@ game.Bullet = me.Entity.extend({
     onCollision: function (res, other) {
       console.log(2222, other.body.collisionType, me.collision.types.ENEMY_OBJECT);
       if (other.body.collisionType === me.collision.types.ENEMY_OBJECT) {
+        me.game.world.removeChild(other);
+        delete othersPlayer[other.__ID__];
         return false;
       }
     },
