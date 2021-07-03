@@ -183,9 +183,10 @@ game.PlayScreen = me.Stage.extend({
   }
 });
 
+var reloading = false;
 me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
   const yAxis = ['up', 'down'];
-  if (keyCode === 32) {
+  if (keyCode === 32 && !reloading) {
     const H = (20/currentPlayer.height * currentPlayer.height)
     const W = (20/currentPlayer.width * currentPlayer.width)
     var bX, bY, bD;
@@ -200,8 +201,13 @@ me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
       else
         bX = currentPlayer.pos.x + (W / 2) - (BULLET_SIZE/2) - W, bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'left';
     }
+    reloading = true;
     const b = me.game.world.addChild(me.pool.pull("bullet", bX, bY))
+    b.__HITTER__ = currentPlayer.__ID__;
     b.__DIRECTION__ = bD;
+    setTimeout(() => {
+      reloading = false
+    }, 500);
   }
 
 });
@@ -252,6 +258,9 @@ game.Tank = me.Sprite.extend({
     if (other.body.collisionType === me.collision.types.ENEMY_OBJECT) {
       return true;
     }
+  },
+  __onHitted__: function(hitter) {
+    console.log(this.__ID__, 'hitted by', hitter);
   },
   update: function(time) {
     this._super(me.Sprite, "update", [time]);
@@ -320,18 +329,7 @@ game.Bullet = me.Entity.extend({
         }));
         this.alwaysUpdate = true;
     },
-    onCollision: function (res, other) {
-      //SERVER-SIDE
-      //if (other.body.collisionType === me.collision.types.ENEMY_OBJECT) {
-        //if (other.__ID__ !== myId) {
-          //me.game.world.removeChild(other);
-          //delete othersPlayer[other.__ID__];
-          //return false;
-        //}
-      //}
-    },
     update : function (time) {
-      time = 10
       if (this.__DIRECTION__) {
         if (this.__DIRECTION__ === 'down') {
           this.pos.y += this.vel * time / 1000;
@@ -355,12 +353,12 @@ game.Bullet = me.Entity.extend({
           }
         }
       }
-      //SERVER-SIDE
-      //me.collision.check(this);
+      // SERVER-SIDE
       // https://www.khanacademy.org/math/geometry/hs-geo-analytic-geometry/hs-geo-distance-and-midpoints/v/distance-formula
       for (var t in othersPlayer) {
         const v = Math.sqrt(Math.pow((this.pos.x - othersPlayer[t].pos.x), 2) + Math.pow((this.pos.y - othersPlayer[t].pos.y), 2));
         if (v <= 10) {
+          othersPlayer[t].__onHitted__(this.__HITTER__);
           me.game.world.removeChild(othersPlayer[t]);
           me.game.world.removeChild(this);
           delete othersPlayer[othersPlayer[t].__ID__];
