@@ -10,8 +10,8 @@ from dataclasses import dataclass
 import websockets
 import tank_pb2
 
-MAP_WIDTH = 400
-MAP_HEIGHT = 400
+MAP_WIDTH = 240
+MAP_HEIGHT = 320
 BULLET_SIZE = 4
 TANK_WIDTH = 20
 TANK_HEIGHT = 20
@@ -68,7 +68,7 @@ async def init(nick, ws):
     id_ = await generate_id()
     if nick is None:
         nick = f"p{str(id_)[:5]}"
-    PLAYERS[id_] = Player(nick=nick, pos=Position(x=random.randint(10, 390), y=random.randint(10, 390)), socket=ws)
+    PLAYERS[id_] = Player(nick=nick, pos=Position(x=random.randint(10, (MAP_HEIGHT - 10)), y=random.randint(10, (MAP_HEIGHT - 10))), socket=ws)
     # PLAYERS[id_] = Player(nick=nick, pos=Position(x=271, y=297), socket=ws)
     # PLAYERS[id_] = Player(nick=nick, pos=Position(x=100, y=100), socket=ws)
     return id_

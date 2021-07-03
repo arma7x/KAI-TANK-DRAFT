@@ -1,5 +1,5 @@
 const BULLET_SIZE = 4;
-const WIDTH = 400, HEIGHT = 400;
+const WIDTH = 240, HEIGHT = 320;
 const TILES = 20;
 const DEBUG = true;
 
