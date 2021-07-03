@@ -1,6 +1,7 @@
 const BULLET_SIZE = 4;
-const WIDTH = 400, HEIGHT = 400;
-const DEBUG = true;
+const WIDTH = 240, HEIGHT = 320;
+const TILES = 20;
+const DEBUG = false;
 
 var myId = null;
 var currentPlayer = null;
@@ -59,11 +60,18 @@ function decodeMessage(s) {
 
 var game = {
   resources: [
-    { name: "greentank", type: "image", "src": "tank-green.png",  }
+    { name: "greentank", type: "image", "src": "/tanks/tile000.png", }, // tank-green.png
+    { name: "grass_1", type: "image", "src": "/tiles/tile000.png", },
+    { name: "grass_2", type: "image", "src": "/tiles/tile001.png", },
+    { name: "grass_3", type: "image", "src": "/tiles/tile002.png", },
+    { name: "grass_4", type: "image", "src": "/tiles/tile003.png", },
+    { name: "grass_5", type: "image", "src": "/tiles/tile004.png", },
   ],
   loaded: function() {
     me.game.world.resize(WIDTH, HEIGHT);
     me.pool.register("greentank", game.Tank);
+    me.pool.register("grass", game.Tank);
+    me.pool.register("grass", game.GrassTile);
     me.pool.register("bullet", game.Bullet);
     this.playScreen = new game.PlayScreen();
     me.state.set(me.state.PLAY, this.playScreen);
@@ -157,7 +165,12 @@ var game = {
 
 game.PlayScreen = me.Stage.extend({
   onResetEvent: function() {
-    me.game.world.addChild(new me.ColorLayer("background", "#A00"), 0);
+    // me.game.world.addChild(new me.ColorLayer("background", "#A00"), 0);
+    for (var y=(TILES/2);y<=HEIGHT;y=y+TILES) {
+      for (var x=(TILES/2);x<=WIDTH;x=x+TILES) {
+        me.game.world.addChild(me.pool.pull("grass", x, y))
+      }
+    }
     me.input.bindKey(me.input.KEY.LEFT, "left");
     me.input.bindKey(me.input.KEY.RIGHT, "right");
     me.input.bindKey(me.input.KEY.UP, "up");
@@ -175,22 +188,80 @@ me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
   const time = 30;
   const yAxis = ['up', 'down'];
   if (keyCode === 32) {
+    const H = (20/currentPlayer.height * currentPlayer.height)
+    const W = (20/currentPlayer.width * currentPlayer.width)
     var bX, bY, bD;
     if (yAxis.indexOf(currentPlayer.__DIRECTION__) > -1) {
       if (currentPlayer.__DIRECTION__ === 'down')
-        bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y + (currentPlayer.height / 2), bD = 'down';
+        bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y + (H / 2), bD = 'down';
       else
-        bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y - (currentPlayer.height / 2) - (BULLET_SIZE/2), bD = 'up';
+        bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y - (H / 2) - (BULLET_SIZE/2), bD = 'up';
     } else {
       if (currentPlayer.__DIRECTION__ === 'right')
-        bX = currentPlayer.pos.x + (currentPlayer.width / 2), bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'right';
+        bX = currentPlayer.pos.x + (W / 2), bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'right';
       else
-        bX = currentPlayer.pos.x + (currentPlayer.width / 2) - (BULLET_SIZE/2) - currentPlayer.width, bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'left';
+        bX = currentPlayer.pos.x + (W / 2) - (BULLET_SIZE/2) - W, bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'left';
     }
     const b = me.game.world.addChild(me.pool.pull("bullet", bX, bY))
     b.__DIRECTION__ = bD;
+  } else {
+    if (currentPlayer.__ID__ === myId) {
+      var newX = currentPlayer.pos.x, newY = currentPlayer.pos.y, newDirection = currentPlayer.__DIRECTION__;
+      const oldX = currentPlayer.pos.x, oldY = currentPlayer.pos.y, oldDirection = currentPlayer.__DIRECTION__;
+      if (action === "left") {
+        if (currentPlayer.__DIRECTION__ !== 'left') {
+          newDirection = rotateTank(currentPlayer, 'left');
+        } else
+          newX -= currentPlayer.vel * time / 1000;
+      } else if (action === "right") {
+        if (currentPlayer.__DIRECTION__ !== 'right') {
+          newDirection = rotateTank(currentPlayer, 'right');
+        } else
+          newX += currentPlayer.vel * time / 1000;
+      } else if (action === "up") {
+        if (currentPlayer.__DIRECTION__ !== 'up') {
+          newDirection = rotateTank(currentPlayer, 'up');
+        } else
+          newY -= currentPlayer.vel * time / 1000;
+      } else if (action === "down") {
+        if (currentPlayer.__DIRECTION__ !== 'down') {
+          newDirection = rotateTank(currentPlayer, 'down');
+        } else
+          newY += currentPlayer.vel * time / 1000;
+      }
+      if (newX !== oldX || newY !== oldY || oldDirection !== newDirection) {
+        currentPlayer.pos.x = me.Math.clamp(newX, currentPlayer.minX, currentPlayer.maxX);
+        currentPlayer.pos.y = me.Math.clamp(newY, currentPlayer.minY, currentPlayer.maxY);
+        var payload = {
+          pos: {
+            x: currentPlayer.pos.x,
+            y: currentPlayer.pos.y
+          },
+          dir: pb_root.Direction[newDirection.toUpperCase()]
+        }
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          socket.send(encodeMessage("0", payload));
+        }
+        if (!me.collision.check(currentPlayer))
+          follow(currentPlayer);
+      }
+    }
   }
 
+});
+
+game.GrassTile = me.Sprite.extend({
+  init: function(x = (TILES/2), y = (TILES/2)) {
+    const n = Math.floor(Math.random() * 5) + 1;
+    this._super(me.Sprite, "init", [
+      x,
+      y,
+      {
+        image: me.loader.getImage(`grass_${n}`),
+      }
+    ]);
+    this.scale(TILES/32, TILES/32);
+  }
 });
 
 game.Tank = me.Sprite.extend({
@@ -203,7 +274,8 @@ game.Tank = me.Sprite.extend({
       }
     ]);
     this.__DIRECTION__ = 'down';
-    this.scale(0.7, 0.7);
+    this.scale(20/64, 20/64);
+    console.log(this.width, this.height);
     this.vel = 65;
     this.minX = (this.width / 2);
     this.maxX = WIDTH - (this.height / 2);
@@ -214,11 +286,11 @@ game.Tank = me.Sprite.extend({
     // add a default collision shape
     this.body.addShape(new me.Rect(0, 0, this.width, this.height));
     // configure max speed and friction
-    this.body.setMaxVelocity(0, 0);
     this.body.setFriction(0.4, 0);
     // enable physic collision (off by default for basic me.Renderable)
     this.isKinematic = false;
     this.body.setVelocity(0, 0);
+    this.body.setMaxVelocity(0, 0);
     this.body.collisionType = me.collision.types.ENEMY_OBJECT;
   },
   onCollision: function (res, other) {
@@ -228,48 +300,6 @@ game.Tank = me.Sprite.extend({
   },
   update: function(time) {
     this._super(me.Sprite, "update", [time]);
-
-    if (this.__ID__ === myId) {
-      var newX = this.pos.x, newY = this.pos.y, newDirection = this.__DIRECTION__;
-      const oldX = this.pos.x, oldY = this.pos.y, oldDirection = this.__DIRECTION__;
-      if (me.input.isKeyPressed("left")) {
-        if (this.__DIRECTION__ !== 'left') {
-          newDirection = rotateTank(this, 'left');
-        } else
-          newX -= this.vel * time / 1000;
-      } else if (me.input.isKeyPressed("right")) {
-        if (this.__DIRECTION__ !== 'right') {
-          newDirection = rotateTank(this, 'right');
-        } else
-          newX += this.vel * time / 1000;
-      } else if (me.input.isKeyPressed("up")) {
-        if (this.__DIRECTION__ !== 'up') {
-          newDirection = rotateTank(this, 'up');
-        } else
-          newY -= this.vel * time / 1000;
-      } else if (me.input.isKeyPressed("down")) {
-        if (this.__DIRECTION__ !== 'down') {
-          newDirection = rotateTank(this, 'down');
-        } else
-          newY += this.vel * time / 1000;
-      }
-      if (newX !== oldX || newY !== oldY || oldDirection !== newDirection) {
-        this.pos.x = me.Math.clamp(newX, this.minX, this.maxX);
-        this.pos.y = me.Math.clamp(newY, this.minY, this.maxY);
-        var payload = {
-          pos: {
-            x: this.pos.x,
-            y: this.pos.y
-          },
-          dir: pb_root.Direction[newDirection.toUpperCase()]
-        }
-        if (socket && socket.readyState === WebSocket.OPEN) {
-          socket.send(encodeMessage("0", payload));
-        }
-        if (!me.collision.check(this))
-          follow(this);
-      }
-    }
     return true;
   }
 });
@@ -278,7 +308,7 @@ game.Bullet = me.Entity.extend({
     init : function (x, y) {
         this._super(me.Entity, "init", [x, y, { width: BULLET_SIZE, height: BULLET_SIZE }]);
         this.vel = 250;
-        this.body.collisionType = me.collision.types.PROJECTILE_OBJECT;
+        //this.body.collisionType = me.collision.types.PROJECTILE_OBJECT;
         this.renderable = new (me.Renderable.extend({
             init : function () {
                 this._super(me.Renderable, "init", [0, 0, BULLET_SIZE, BULLET_SIZE]);
@@ -294,13 +324,14 @@ game.Bullet = me.Entity.extend({
         this.alwaysUpdate = true;
     },
     onCollision: function (res, other) {
-      if (other.body.collisionType === me.collision.types.ENEMY_OBJECT) {
-        if (other.__ID__ !== myId) {
-          me.game.world.removeChild(other);
-          delete othersPlayer[other.__ID__];
-          return false;
-        }
-      }
+      //SERVER-SIDE
+      //if (other.body.collisionType === me.collision.types.ENEMY_OBJECT) {
+        //if (other.__ID__ !== myId) {
+          //me.game.world.removeChild(other);
+          //delete othersPlayer[other.__ID__];
+          //return false;
+        //}
+      //}
     },
     update : function (time) {
       if (this.__DIRECTION__) {
@@ -326,7 +357,8 @@ game.Bullet = me.Entity.extend({
           }
         }
       }
-      me.collision.check(this);
+      //SERVER-SIDE
+      //me.collision.check(this); 
       return true;
     }
 });

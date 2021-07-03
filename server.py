@@ -62,7 +62,7 @@ async def init(nick, ws):
     id_ = await generate_id()
     if nick is None:
         nick = f"p{str(id_)[:5]}"
-    PLAYERS[id_] = Player(nick=nick, pos=Position(x=random.randint(50, 350), y=random.randint(50, 350)), socket=ws)
+    PLAYERS[id_] = Player(nick=nick, pos=Position(x=random.randint(10, 230), y=random.randint(10, 310)), socket=ws)
     # PLAYERS[id_] = Player(nick=nick, pos=Position(x=271, y=297), socket=ws)
     # PLAYERS[id_] = Player(nick=nick, pos=Position(x=100, y=100), socket=ws)
     return id_
