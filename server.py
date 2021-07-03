@@ -10,8 +10,12 @@ from dataclasses import dataclass
 import websockets
 import tank_pb2
 
+BULLET_SIZE = 4
+TANK_WIDTH = 20
+TANK_HEIGHT = 20
 
 PLAYERS = dict()
+BULLETS = dict()
 
 class Direction(Enum):
     UP = 0
@@ -93,6 +97,8 @@ async def decode_message(s):
         return "1", tank_pb2.Voice.FromString(b64decode(content))
     if message_type == "2":
         return "2", tank_pb2.NickSelection.FromString(b64decode(content))
+    if message_type == "3":
+        return "3", tank_pb2.Bullet.FromString(b64decode(content))
 
     # raise ValueError(f"Invalid message type: {message_type}")
 
@@ -130,6 +136,31 @@ async def accept(ws, path):
             if t == "0":
                 await pos(id_, message)
                 await broadcast(id_)
+            if t == "3":
+                bX: float = 0
+                bY: float = 0
+                message.id = await generate_id()
+                message.shooter = id_
+
+                if (PLAYERS[id_].dir_ == Direction.UP or PLAYERS[id_].dir_ == Direction.DOWN):
+                    if (PLAYERS[id_].dir_ == Direction.DOWN):
+                        bX = PLAYERS[id_].pos.x - (BULLET_SIZE / 2)
+                        bY = PLAYERS[id_].pos.y + (TANK_HEIGHT / 2)
+                    else:
+                        bX = PLAYERS[id_].pos.x - (BULLET_SIZE / 2)
+                        bY = PLAYERS[id_].pos.y - (TANK_HEIGHT / 2) - (BULLET_SIZE / 2)
+                else:
+                    if (PLAYERS[id_].dir_ == Direction.RIGHT):
+                        bX = PLAYERS[id_].pos.x + (TANK_WIDTH / 2)
+                        bY = PLAYERS[id_].pos.y - (BULLET_SIZE / 2)
+                    else:
+                        bX = PLAYERS[id_].pos.x + (TANK_WIDTH / 2) - (BULLET_SIZE / 2) - TANK_WIDTH
+                        bY = PLAYERS[id_].pos.y - (BULLET_SIZE / 2)
+                message.pos.x = bX
+                message.pos.y = bY
+                message.dir = PLAYERS[id_].dir_.value
+                BULLETS[message.id] = message
+                print(BULLETS)
         except:
           pass
 

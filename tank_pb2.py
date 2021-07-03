@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto2',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\ntank.proto\" \n\x08Position\x12\t\n\x01x\x18\x01 \x02(\x02\x12\t\n\x01y\x18\x02 \x02(\x02\"S\n\x06Player\x12\x0c\n\x04nick\x18\x01 \x02(\t\x12\x16\n\x03pos\x18\x02 \x02(\x0b\x32\t.Position\x12\n\n\x02hp\x18\x03 \x02(\x02\x12\x17\n\x03\x64ir\x18\x04 \x02(\x0e\x32\n.Direction\"\x1d\n\rNickSelection\x12\x0c\n\x04nick\x18\x01 \x01(\t\"\x1a\n\x05Voice\x12\x11\n\tvoicedata\x18\x01 \x02(\x0c\";\n\x08Movement\x12\x16\n\x03pos\x18\x01 \x02(\x0b\x32\t.Position\x12\x17\n\x03\x64ir\x18\x02 \x02(\x0e\x32\n.Direction\"v\n\rInfoBroadcast\x12,\n\x07players\x18\x01 \x03(\x0b\x32\x1b.InfoBroadcast.PlayersEntry\x1a\x37\n\x0cPlayersEntry\x12\x0b\n\x03key\x18\x01 \x01(\x07\x12\x16\n\x05value\x18\x02 \x01(\x0b\x32\x07.Player:\x02\x38\x01\"\x18\n\nDisconnect\x12\n\n\x02id\x18\x01 \x02(\x07\"+\n\x04Init\x12\n\n\x02id\x18\x01 \x02(\x07\x12\x17\n\x04move\x18\x02 \x02(\x0b\x32\t.Movement\"\x1b\n\x0c\x45rrorMessage\x12\x0b\n\x03msg\x18\x01 \x02(\t*2\n\tDirection\x12\x06\n\x02UP\x10\x00\x12\x08\n\x04\x44OWN\x10\x01\x12\t\n\x05RIGHT\x10\x02\x12\x08\n\x04LEFT\x10\x03'
+  serialized_pb=b'\n\ntank.proto\" \n\x08Position\x12\t\n\x01x\x18\x01 \x02(\x02\x12\t\n\x01y\x18\x02 \x02(\x02\"S\n\x06Player\x12\x0c\n\x04nick\x18\x01 \x02(\t\x12\x16\n\x03pos\x18\x02 \x02(\x0b\x32\t.Position\x12\n\n\x02hp\x18\x03 \x02(\x02\x12\x17\n\x03\x64ir\x18\x04 \x02(\x0e\x32\n.Direction\"V\n\x06\x42ullet\x12\n\n\x02id\x18\x01 \x01(\x07\x12\x0f\n\x07shooter\x18\x02 \x01(\x07\x12\x16\n\x03pos\x18\x03 \x01(\x0b\x32\t.Position\x12\x17\n\x03\x64ir\x18\x04 \x01(\x0e\x32\n.Direction\"\x1d\n\rNickSelection\x12\x0c\n\x04nick\x18\x01 \x01(\t\"\x1a\n\x05Voice\x12\x11\n\tvoicedata\x18\x01 \x02(\x0c\";\n\x08Movement\x12\x16\n\x03pos\x18\x01 \x02(\x0b\x32\t.Position\x12\x17\n\x03\x64ir\x18\x02 \x02(\x0e\x32\n.Direction\"v\n\rInfoBroadcast\x12,\n\x07players\x18\x01 \x03(\x0b\x32\x1b.InfoBroadcast.PlayersEntry\x1a\x37\n\x0cPlayersEntry\x12\x0b\n\x03key\x18\x01 \x01(\x07\x12\x16\n\x05value\x18\x02 \x01(\x0b\x32\x07.Player:\x02\x38\x01\"z\n\x0f\x42ulletBroadcast\x12.\n\x07\x62ullets\x18\x01 \x03(\x0b\x32\x1d.BulletBroadcast.BulletsEntry\x1a\x37\n\x0c\x42ulletsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x07\x12\x16\n\x05value\x18\x02 \x01(\x0b\x32\x07.Bullet:\x02\x38\x01\"\x18\n\nDisconnect\x12\n\n\x02id\x18\x01 \x02(\x07\"+\n\x04Init\x12\n\n\x02id\x18\x01 \x02(\x07\x12\x17\n\x04move\x18\x02 \x02(\x0b\x32\t.Movement\"\x1b\n\x0c\x45rrorMessage\x12\x0b\n\x03msg\x18\x01 \x02(\t*2\n\tDirection\x12\x06\n\x02UP\x10\x00\x12\x08\n\x04\x44OWN\x10\x01\x12\t\n\x05RIGHT\x10\x02\x12\x08\n\x04LEFT\x10\x03'
 )
 
 _DIRECTION = _descriptor.EnumDescriptor(
@@ -53,8 +53,8 @@ _DIRECTION = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=473,
-  serialized_end=523,
+  serialized_start=685,
+  serialized_end=735,
 )
 _sym_db.RegisterEnumDescriptor(_DIRECTION)
 
@@ -158,6 +158,59 @@ _PLAYER = _descriptor.Descriptor(
 )
 
 
+_BULLET = _descriptor.Descriptor(
+  name='Bullet',
+  full_name='Bullet',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='Bullet.id', index=0,
+      number=1, type=7, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='shooter', full_name='Bullet.shooter', index=1,
+      number=2, type=7, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='pos', full_name='Bullet.pos', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='dir', full_name='Bullet.dir', index=3,
+      number=4, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto2',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=133,
+  serialized_end=219,
+)
+
+
 _NICKSELECTION = _descriptor.Descriptor(
   name='NickSelection',
   full_name='NickSelection',
@@ -185,8 +238,8 @@ _NICKSELECTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=133,
-  serialized_end=162,
+  serialized_start=221,
+  serialized_end=250,
 )
 
 
@@ -217,8 +270,8 @@ _VOICE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=164,
-  serialized_end=190,
+  serialized_start=252,
+  serialized_end=278,
 )
 
 
@@ -256,8 +309,8 @@ _MOVEMENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=192,
-  serialized_end=251,
+  serialized_start=280,
+  serialized_end=339,
 )
 
 
@@ -295,8 +348,8 @@ _INFOBROADCAST_PLAYERSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=316,
-  serialized_end=371,
+  serialized_start=404,
+  serialized_end=459,
 )
 
 _INFOBROADCAST = _descriptor.Descriptor(
@@ -326,8 +379,78 @@ _INFOBROADCAST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=253,
-  serialized_end=371,
+  serialized_start=341,
+  serialized_end=459,
+)
+
+
+_BULLETBROADCAST_BULLETSENTRY = _descriptor.Descriptor(
+  name='BulletsEntry',
+  full_name='BulletBroadcast.BulletsEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='BulletBroadcast.BulletsEntry.key', index=0,
+      number=1, type=7, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='BulletBroadcast.BulletsEntry.value', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=b'8\001',
+  is_extendable=False,
+  syntax='proto2',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=528,
+  serialized_end=583,
+)
+
+_BULLETBROADCAST = _descriptor.Descriptor(
+  name='BulletBroadcast',
+  full_name='BulletBroadcast',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='bullets', full_name='BulletBroadcast.bullets', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[_BULLETBROADCAST_BULLETSENTRY, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto2',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=461,
+  serialized_end=583,
 )
 
 
@@ -358,8 +481,8 @@ _DISCONNECT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=373,
-  serialized_end=397,
+  serialized_start=585,
+  serialized_end=609,
 )
 
 
@@ -397,8 +520,8 @@ _INIT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=399,
-  serialized_end=442,
+  serialized_start=611,
+  serialized_end=654,
 )
 
 
@@ -429,24 +552,31 @@ _ERRORMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=444,
-  serialized_end=471,
+  serialized_start=656,
+  serialized_end=683,
 )
 
 _PLAYER.fields_by_name['pos'].message_type = _POSITION
 _PLAYER.fields_by_name['dir'].enum_type = _DIRECTION
+_BULLET.fields_by_name['pos'].message_type = _POSITION
+_BULLET.fields_by_name['dir'].enum_type = _DIRECTION
 _MOVEMENT.fields_by_name['pos'].message_type = _POSITION
 _MOVEMENT.fields_by_name['dir'].enum_type = _DIRECTION
 _INFOBROADCAST_PLAYERSENTRY.fields_by_name['value'].message_type = _PLAYER
 _INFOBROADCAST_PLAYERSENTRY.containing_type = _INFOBROADCAST
 _INFOBROADCAST.fields_by_name['players'].message_type = _INFOBROADCAST_PLAYERSENTRY
+_BULLETBROADCAST_BULLETSENTRY.fields_by_name['value'].message_type = _BULLET
+_BULLETBROADCAST_BULLETSENTRY.containing_type = _BULLETBROADCAST
+_BULLETBROADCAST.fields_by_name['bullets'].message_type = _BULLETBROADCAST_BULLETSENTRY
 _INIT.fields_by_name['move'].message_type = _MOVEMENT
 DESCRIPTOR.message_types_by_name['Position'] = _POSITION
 DESCRIPTOR.message_types_by_name['Player'] = _PLAYER
+DESCRIPTOR.message_types_by_name['Bullet'] = _BULLET
 DESCRIPTOR.message_types_by_name['NickSelection'] = _NICKSELECTION
 DESCRIPTOR.message_types_by_name['Voice'] = _VOICE
 DESCRIPTOR.message_types_by_name['Movement'] = _MOVEMENT
 DESCRIPTOR.message_types_by_name['InfoBroadcast'] = _INFOBROADCAST
+DESCRIPTOR.message_types_by_name['BulletBroadcast'] = _BULLETBROADCAST
 DESCRIPTOR.message_types_by_name['Disconnect'] = _DISCONNECT
 DESCRIPTOR.message_types_by_name['Init'] = _INIT
 DESCRIPTOR.message_types_by_name['ErrorMessage'] = _ERRORMESSAGE
@@ -466,6 +596,13 @@ Player = _reflection.GeneratedProtocolMessageType('Player', (_message.Message,),
   # @@protoc_insertion_point(class_scope:Player)
   })
 _sym_db.RegisterMessage(Player)
+
+Bullet = _reflection.GeneratedProtocolMessageType('Bullet', (_message.Message,), {
+  'DESCRIPTOR' : _BULLET,
+  '__module__' : 'tank_pb2'
+  # @@protoc_insertion_point(class_scope:Bullet)
+  })
+_sym_db.RegisterMessage(Bullet)
 
 NickSelection = _reflection.GeneratedProtocolMessageType('NickSelection', (_message.Message,), {
   'DESCRIPTOR' : _NICKSELECTION,
@@ -503,6 +640,21 @@ InfoBroadcast = _reflection.GeneratedProtocolMessageType('InfoBroadcast', (_mess
 _sym_db.RegisterMessage(InfoBroadcast)
 _sym_db.RegisterMessage(InfoBroadcast.PlayersEntry)
 
+BulletBroadcast = _reflection.GeneratedProtocolMessageType('BulletBroadcast', (_message.Message,), {
+
+  'BulletsEntry' : _reflection.GeneratedProtocolMessageType('BulletsEntry', (_message.Message,), {
+    'DESCRIPTOR' : _BULLETBROADCAST_BULLETSENTRY,
+    '__module__' : 'tank_pb2'
+    # @@protoc_insertion_point(class_scope:BulletBroadcast.BulletsEntry)
+    })
+  ,
+  'DESCRIPTOR' : _BULLETBROADCAST,
+  '__module__' : 'tank_pb2'
+  # @@protoc_insertion_point(class_scope:BulletBroadcast)
+  })
+_sym_db.RegisterMessage(BulletBroadcast)
+_sym_db.RegisterMessage(BulletBroadcast.BulletsEntry)
+
 Disconnect = _reflection.GeneratedProtocolMessageType('Disconnect', (_message.Message,), {
   'DESCRIPTOR' : _DISCONNECT,
   '__module__' : 'tank_pb2'
@@ -526,4 +678,5 @@ _sym_db.RegisterMessage(ErrorMessage)
 
 
 _INFOBROADCAST_PLAYERSENTRY._options = None
+_BULLETBROADCAST_BULLETSENTRY._options = None
 # @@protoc_insertion_point(module_scope)

@@ -20,6 +20,13 @@ message Player {
   required Direction dir = 4;
 }
 
+message Bullet {
+  optional fixed32 id = 1;
+  optional fixed32 shooter = 2;
+  optional Position pos = 3;
+  optional Direction dir = 4;
+}
+
 message NickSelection {
   optional string nick = 1;
 }
@@ -35,6 +42,10 @@ message Movement {
 
 message InfoBroadcast {
   map<fixed32, Player> players = 1;
+}
+
+message BulletBroadcast {
+  map<fixed32, Bullet> bullets = 1;
 }
 
 message Disconnect {

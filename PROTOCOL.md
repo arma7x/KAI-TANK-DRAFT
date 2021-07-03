@@ -4,6 +4,7 @@ message content according to `tank.proto` and encoded in base64.
  - `0`: Movement
  - `1`: Voice
  - `2`: Nick Selection
+ - `3`: Fire Bullet
 
 #### Server -> Client message types
  - `0`: Info Broadcast

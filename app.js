@@ -24,6 +24,8 @@ function encodeMessage(type, msg) {
     encodedBinary = pb_root.Voice.encode(msg).finish();
   } else if (type === "2") {
     encodedBinary = pb_root.NickSelection.encode(msg).finish();
+  } else if (type === "3") {
+    encodedBinary = pb_root.Bullet.encode(msg).finish();
   }
   if (encodedBinary === null) {
     throw new Error("Invalid type for encoding");
@@ -205,6 +207,9 @@ me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
     const b = me.game.world.addChild(me.pool.pull("bullet", bX, bY))
     b.__HITTER__ = currentPlayer.__ID__;
     b.__DIRECTION__ = bD;
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(encodeMessage("3", {}));
+    }
     setTimeout(() => {
       reloading = false
     }, 300);
