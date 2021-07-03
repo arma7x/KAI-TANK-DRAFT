@@ -357,11 +357,14 @@ game.Bullet = me.Entity.extend({
       }
       //SERVER-SIDE
       //me.collision.check(this);
+      // https://www.khanacademy.org/math/geometry/hs-geo-analytic-geometry/hs-geo-distance-and-midpoints/v/distance-formula
       for (var t in othersPlayer) {
-        if (this.overlaps(othersPlayer[t])) {
+        const v = Math.sqrt(Math.pow((this.pos.x - othersPlayer[t].pos.x), 2) + Math.pow((this.pos.y - othersPlayer[t].pos.y), 2));
+        if (v <= 10) {
           me.game.world.removeChild(othersPlayer[t]);
           delete othersPlayer[othersPlayer[t].__ID__];
         }
+        
       }
       return true;
     }
