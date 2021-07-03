@@ -10,6 +10,8 @@ from dataclasses import dataclass
 import websockets
 import tank_pb2
 
+MAP_WIDTH = 400
+MAP_HEIGHT = 400
 BULLET_SIZE = 4
 TANK_WIDTH = 20
 TANK_HEIGHT = 20
@@ -111,10 +113,47 @@ async def broadcastBullet():
     global BULLETS
     bullets = dict()
     for key, value in BULLETS.items():
-      bullets[key] = value
+        bullets[key] = value
     info_message = tank_pb2.BulletBroadcast(bullets=bullets)
     for _, player in PLAYERS.items():
         await player.socket.send(await encode_message("1", info_message))
+
+async def periodic():
+    # calculate bullet movement
+    # x = -1 or y = -1 if bullet position is overmap area/hitted any tank
+    global BULLETS
+    while True:
+        off_bullets = dict()
+        for key, value in BULLETS.items():
+            if (value.dir == Direction.DOWN.value):
+              value.pos.y += 65 * 16 / 1000
+              if (value.pos.y + BULLET_SIZE >= MAP_HEIGHT):
+                  value.pos.y = -1
+                  off_bullets[key] = value
+            elif (value.dir == Direction.UP.value):
+              value.pos.y -= 65 * 16 / 1000
+              if (value.pos.y - BULLET_SIZE <= 0):
+                  value.pos.y = -1
+                  off_bullets[key] = value
+            elif (value.dir == Direction.RIGHT.value):
+              value.pos.x += 65 * 16 / 1000
+              if (value.pos.x + BULLET_SIZE >= MAP_WIDTH):
+                  value.pos.x = -1
+                  off_bullets[key] = value
+            elif (value.dir == Direction.LEFT.value):
+              value.pos.x -= 65 * 16 / 1000
+              if (value.pos.x - BULLET_SIZE <= 0):
+                  value.pos.x = -1
+                  off_bullets[key] = value
+
+        if (len(off_bullets) > 0):
+            for key, _ in off_bullets.items():
+                if (key in BULLETS.keys()):
+                    BULLETS.pop(key)
+            info_message = tank_pb2.BulletBroadcast(bullets=off_bullets)
+            for _, player in PLAYERS.items():
+                await player.socket.send(await encode_message("1", info_message))
+        await asyncio.sleep(0.016)
 
 async def accept(ws, path):
     nick_check = re.compile("[A-Za-z0-9]+").match
@@ -198,4 +237,5 @@ if __name__ == "__main__":
         asyncio.get_event_loop().run_until_complete(
             websockets.serve(accept, ip, port)
         )
+    asyncio.get_event_loop().run_until_complete(asyncio.get_event_loop().create_task(periodic()))
     asyncio.get_event_loop().run_forever()

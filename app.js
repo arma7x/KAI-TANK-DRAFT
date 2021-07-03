@@ -84,7 +84,7 @@ var game = {
 
     let host = "shangul.de1.hashbang.sh"
     if (document.location.host != host)
-      host = "ws://0.0.0.0:3000"
+      host = `ws://${document.location.host.split(':')[0]}:3000`
     else
       host = "wss://shangul.de1.hashbang.sh/server"
     socket = new WebSocket(host);
@@ -115,7 +115,7 @@ var game = {
               }
               shadowPlayer.pos.x = me.Math.clamp(move.pos.x, shadowPlayer.minX, shadowPlayer.maxX);
               shadowPlayer.pos.y = me.Math.clamp(move.pos.y, shadowPlayer.minY, shadowPlayer.maxY);
-            //}, 250); // stimulate lag
+            //}, 65); // stimulate lag
           }
         }
       }
@@ -123,11 +123,17 @@ var game = {
         // bullets
         for (var x in dataP.bullets) {
           const bullet = dataP.bullets[x];
-          const dir = pb_root.Direction.__proto__[bullet.dir].toLowerCase();
-          const b = me.game.world.addChild(me.pool.pull("bullet", bullet.pos.x, bullet.pos.y))
-          b.__HITTER__ = bullet.shooter;
-          b.__DIRECTION__ = dir;
-          console.log(bullet.id);
+          if (bullets[bullet.id] == null) {
+            const dir = pb_root.Direction.__proto__[bullet.dir].toLowerCase();
+            const b = me.game.world.addChild(me.pool.pull("bullet", bullet.pos.x, bullet.pos.y))
+            b.__HITTER__ = bullet.shooter;
+            b.__DIRECTION__ = dir;
+            bullets[bullet.id] = b;
+            // console.log("Add", bullet.id);
+          } else if (bullet.pos.x === -1 || bullet.pos.y === -1) {
+            // console.log("Remove", bullet.id);
+            me.game.world.removeChild(bullets[bullet.id]);
+          }
         }
       }
       if (dataP._type === "2") {
@@ -205,23 +211,8 @@ var reloading = false;
 me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
   const yAxis = ['up', 'down'];
   if (keyCode === 32 && !reloading) {
-    //var bX, bY, bD;
-    //if (yAxis.indexOf(currentPlayer.__DIRECTION__) > -1) {
-      //if (currentPlayer.__DIRECTION__ === 'down')
-        //bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y + (currentPlayer.height / 2), bD = 'down';
-      //else
-        //bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y - (currentPlayer.height / 2) - (BULLET_SIZE/2), bD = 'up';
-    //} else {
-      //if (currentPlayer.__DIRECTION__ === 'right')
-        //bX = currentPlayer.pos.x + (currentPlayer.width / 2), bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'right';
-      //else
-        //bX = currentPlayer.pos.x - (currentPlayer.width / 2) - (BULLET_SIZE/2), bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'left';
-    //}
-    //reloading = true;
-    //const b = me.game.world.addChild(me.pool.pull("bullet", bX, bY))
-    //b.__HITTER__ = currentPlayer.__ID__;
-    //b.__DIRECTION__ = bD;
     if (socket && socket.readyState === WebSocket.OPEN) {
+      // console.log('hit');
       socket.send(encodeMessage("3", {}));
     }
     setTimeout(() => {
@@ -278,7 +269,7 @@ game.Tank = me.Sprite.extend({
     }
   },
   __onHitted__: function(hitter) {
-    console.log(this.__ID__, 'hitted by', hitter);
+    // console.log(this.__ID__, 'hitted by', hitter);
   },
   update: function(time) {
     this._super(me.Sprite, "update", [time]);
@@ -331,7 +322,7 @@ game.Tank = me.Sprite.extend({
 game.Bullet = me.Entity.extend({
     init : function (x, y) {
         this._super(me.Entity, "init", [x, y, { width: BULLET_SIZE, height: BULLET_SIZE }]);
-        this.vel = 250;
+        this.vel = 65;
         this.body.collisionType = me.collision.types.NO_OBJECT;
         this.renderable = new (me.Renderable.extend({
             init : function () {
@@ -348,29 +339,17 @@ game.Bullet = me.Entity.extend({
         this.alwaysUpdate = true;
     },
     update : function (time) {
-      //if (this.__DIRECTION__) {
-        //if (this.__DIRECTION__ === 'down') {
-          //this.pos.y += this.vel * time / 1000;
-          //if (this.pos.y + this.height >= HEIGHT) {
-              //me.game.world.removeChild(this);
-          //}
-        //} else if (this.__DIRECTION__ === 'up') {
-          //this.pos.y -= this.vel * time / 1000;
-          //if (this.pos.y - this.height <= 0) {
-              //me.game.world.removeChild(this);
-          //}
-        //} else if (this.__DIRECTION__ === 'right') {
-          //this.pos.x += this.vel * time / 1000;
-          //if (this.pos.x + this.width >= WIDTH) {
-              //me.game.world.removeChild(this);
-          //}
-        //} else if (this.__DIRECTION__ === 'left') {
-          //this.pos.x -= this.vel * time / 1000;
-          //if (this.pos.x - this.width <= 0) {
-              //me.game.world.removeChild(this);
-          //}
-        //}
-      //}
+      if (this.__DIRECTION__) {
+        if (this.__DIRECTION__ === 'down') {
+          this.pos.y += this.vel * time / 1000;
+        } else if (this.__DIRECTION__ === 'up') {
+          this.pos.y -= this.vel * time / 1000;
+        } else if (this.__DIRECTION__ === 'right') {
+          this.pos.x += this.vel * time / 1000;
+        } else if (this.__DIRECTION__ === 'left') {
+          this.pos.x -= this.vel * time / 1000;
+        }
+      }
       // SERVER-SIDE
       // https://www.khanacademy.org/math/geometry/hs-geo-analytic-geometry/hs-geo-distance-and-midpoints/v/distance-formula
       //for (var t in othersPlayer) {
