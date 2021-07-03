@@ -139,8 +139,10 @@ var game = {
         }
       }
       if (dataP._type === "3") {
-        me.game.world.removeChild(othersPlayer[dataP.id]);
-        delete othersPlayer[dataP.id];
+        if (othersPlayer[dataP.id]) {
+          me.game.world.removeChild(othersPlayer[dataP.id]);
+          delete othersPlayer[dataP.id];
+        }
       }
     };
     socket.onopen = () => {
