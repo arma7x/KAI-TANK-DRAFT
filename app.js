@@ -184,7 +184,6 @@ game.PlayScreen = me.Stage.extend({
 });
 
 me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
-  const time = 30;
   const yAxis = ['up', 'down'];
   if (keyCode === 32) {
     const H = (20/currentPlayer.height * currentPlayer.height)
@@ -332,6 +331,7 @@ game.Bullet = me.Entity.extend({
       //}
     },
     update : function (time) {
+      time = 10
       if (this.__DIRECTION__) {
         if (this.__DIRECTION__ === 'down') {
           this.pos.y += this.vel * time / 1000;
@@ -356,7 +356,13 @@ game.Bullet = me.Entity.extend({
         }
       }
       //SERVER-SIDE
-      //me.collision.check(this); 
+      //me.collision.check(this);
+      for (var t in othersPlayer) {
+        if (this.overlaps(othersPlayer[t])) {
+          me.game.world.removeChild(othersPlayer[t]);
+          delete othersPlayer[othersPlayer[t].__ID__];
+        }
+      }
       return true;
     }
 });
