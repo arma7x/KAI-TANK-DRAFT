@@ -60,7 +60,7 @@ function decodeMessage(s) {
 
 var game = {
   resources: [
-    { name: "greentank", type: "image", "src": "/tanks/tile000.png", }, // tank-green.png
+    { name: "greentank", type: "image", "src": "/tanks/tile000_20.png", }, // tank-green.png
     { name: "grass_1", type: "image", "src": "/tiles/tile000.png", },
     { name: "grass_2", type: "image", "src": "/tiles/tile001.png", },
     { name: "grass_3", type: "image", "src": "/tiles/tile002.png", },
@@ -189,19 +189,17 @@ var reloading = false;
 me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
   const yAxis = ['up', 'down'];
   if (keyCode === 32 && !reloading) {
-    const H = (20/currentPlayer.height * currentPlayer.height)
-    const W = (20/currentPlayer.width * currentPlayer.width)
     var bX, bY, bD;
     if (yAxis.indexOf(currentPlayer.__DIRECTION__) > -1) {
       if (currentPlayer.__DIRECTION__ === 'down')
-        bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y + (H / 2), bD = 'down';
+        bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y + (currentPlayer.height / 2), bD = 'down';
       else
-        bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y - (H / 2) - (BULLET_SIZE/2), bD = 'up';
+        bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y - (currentPlayer.height / 2) - (BULLET_SIZE/2), bD = 'up';
     } else {
       if (currentPlayer.__DIRECTION__ === 'right')
-        bX = currentPlayer.pos.x + (W / 2), bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'right';
+        bX = currentPlayer.pos.x + (currentPlayer.width / 2), bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'right';
       else
-        bX = currentPlayer.pos.x + (W / 2) - (BULLET_SIZE/2) - W, bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'left';
+        bX = currentPlayer.pos.x + (currentPlayer.width / 2) - (BULLET_SIZE/2) - currentPlayer.width, bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'left';
     }
     reloading = true;
     const b = me.game.world.addChild(me.pool.pull("bullet", bX, bY))
@@ -209,7 +207,7 @@ me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
     b.__DIRECTION__ = bD;
     setTimeout(() => {
       reloading = false
-    }, 500);
+    }, 300);
   }
 
 });
@@ -238,7 +236,6 @@ game.Tank = me.Sprite.extend({
       }
     ]);
     this.__DIRECTION__ = 'down';
-    this.scale(20/64, 20/64);
     this.vel = 65;
     this.minX = (this.width / 2);
     this.maxX = WIDTH - (this.height / 2);
