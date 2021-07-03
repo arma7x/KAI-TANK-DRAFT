@@ -201,7 +201,7 @@ me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
       if (currentPlayer.__DIRECTION__ === 'right')
         bX = currentPlayer.pos.x + (currentPlayer.width / 2), bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'right';
       else
-        bX = currentPlayer.pos.x + (currentPlayer.width / 2) - (BULLET_SIZE/2) - currentPlayer.width, bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'left';
+        bX = currentPlayer.pos.x - (currentPlayer.width / 2) - (BULLET_SIZE/2), bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'left';
     }
     reloading = true;
     const b = me.game.world.addChild(me.pool.pull("bullet", bX, bY))

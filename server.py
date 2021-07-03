@@ -154,7 +154,7 @@ async def accept(ws, path):
                         bX = PLAYERS[id_].pos.x + (TANK_WIDTH / 2)
                         bY = PLAYERS[id_].pos.y - (BULLET_SIZE / 2)
                     else:
-                        bX = PLAYERS[id_].pos.x + (TANK_WIDTH / 2) - (BULLET_SIZE / 2) - TANK_WIDTH
+                        bX = PLAYERS[id_].pos.x - (TANK_WIDTH / 2) - (BULLET_SIZE / 2)
                         bY = PLAYERS[id_].pos.y - (BULLET_SIZE / 2)
                 message.pos.x = bX
                 message.pos.y = bY
