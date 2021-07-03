@@ -8,7 +8,8 @@ message content according to `tank.proto` and encoded in base64.
 
 #### Server -> Client message types
  - `0`: Info Broadcast
- - `1`: Voice
+ - `1`: Bullet Broadcast
  - `2`: Init
- - `3`: Disconnect
- - `4`: Error Message
+ - `3`: Voice
+ - `4`: Disconnect
+ - `5`: Error Message

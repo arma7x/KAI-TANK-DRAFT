@@ -7,6 +7,7 @@ var myId = null;
 var currentPlayer = null;
 var shadowPlayer = null;
 var othersPlayer = {};
+var bullets = {};
 var socket = null;
 var pb_root = null;
 
@@ -44,12 +45,14 @@ function decodeMessage(s) {
   if (type === "0") {
     message = pb_root.InfoBroadcast.decode(buffer);
   } else if (type === "1") {
-    message = pb_root.Voice.decode(buffer);
-  } else if (type === "3") {
-    message = pb_root.Disconnect.decode(buffer);
+    message = pb_root.BulletBroadcast.decode(buffer);
   } else if (type === "2") {
     message = pb_root.Init.decode(buffer);
+  } else if (type === "3") {
+    message = pb_root.Voice.decode(buffer);
   } else if (type === "4") {
+    message = pb_root.Disconnect.decode(buffer);
+  } else if (type === "5") {
     message = pb_root.ErrorMessage.decode(buffer);
   }
   if (message === null) {
@@ -87,30 +90,6 @@ var game = {
     socket = new WebSocket(host);
     socket.onmessage = evt => {
       let dataP = decodeMessage(evt.data);
-      if (dataP._type === "2") {
-        myId = dataP.id
-        currentPlayer = me.game.world.addChild(me.pool.pull("greentank"));
-        currentPlayer.__ID__ = myId
-        currentPlayer.pos.x = me.Math.clamp(dataP.move.pos.x, currentPlayer.minX, currentPlayer.maxX);
-        currentPlayer.pos.y = me.Math.clamp(dataP.move.pos.y, currentPlayer.minY, currentPlayer.maxY);
-        const dir = pb_root.Direction.__proto__[dataP.move.dir].toLowerCase();
-        if (currentPlayer.__DIRECTION__ !== dir) {
-          rotateTank(currentPlayer, dir);
-        }
-        follow(currentPlayer)
-        if (DEBUG) {
-          shadowPlayer = me.game.world.addChild(me.pool.pull("greentank"));
-          shadowPlayer.body.collisionType = me.collision.types.NO_OBJECT;
-          shadowPlayer.__ID__ = 'DEBUG'
-          shadowPlayer.pos.x = me.Math.clamp(dataP.move.pos.x, shadowPlayer.minX, shadowPlayer.maxX);
-          shadowPlayer.pos.y = me.Math.clamp(dataP.move.pos.y, shadowPlayer.minY, shadowPlayer.maxY);
-          const dir = pb_root.Direction.__proto__[dataP.move.dir].toLowerCase();
-          if (shadowPlayer.__DIRECTION__ !== dir) {
-            rotateTank(shadowPlayer, dir);
-          }
-          follow(shadowPlayer)
-        }
-      }
       if (dataP._type === "0") {
         for (let p in dataP.players) {
           p = parseInt(p)
@@ -140,7 +119,42 @@ var game = {
           }
         }
       }
-      if (dataP._type === "3") {
+      if (dataP._type === "1") {
+        // bullets
+        for (var x in dataP.bullets) {
+          const bullet = dataP.bullets[x];
+          const dir = pb_root.Direction.__proto__[bullet.dir].toLowerCase();
+          const b = me.game.world.addChild(me.pool.pull("bullet", bullet.pos.x, bullet.pos.y))
+          b.__HITTER__ = bullet.shooter;
+          b.__DIRECTION__ = dir;
+          console.log(bullet.id);
+        }
+      }
+      if (dataP._type === "2") {
+        myId = dataP.id
+        currentPlayer = me.game.world.addChild(me.pool.pull("greentank"));
+        currentPlayer.__ID__ = myId
+        currentPlayer.pos.x = me.Math.clamp(dataP.move.pos.x, currentPlayer.minX, currentPlayer.maxX);
+        currentPlayer.pos.y = me.Math.clamp(dataP.move.pos.y, currentPlayer.minY, currentPlayer.maxY);
+        const dir = pb_root.Direction.__proto__[dataP.move.dir].toLowerCase();
+        if (currentPlayer.__DIRECTION__ !== dir) {
+          rotateTank(currentPlayer, dir);
+        }
+        follow(currentPlayer)
+        if (DEBUG) {
+          shadowPlayer = me.game.world.addChild(me.pool.pull("greentank"));
+          shadowPlayer.body.collisionType = me.collision.types.NO_OBJECT;
+          shadowPlayer.__ID__ = 'DEBUG'
+          shadowPlayer.pos.x = me.Math.clamp(dataP.move.pos.x, shadowPlayer.minX, shadowPlayer.maxX);
+          shadowPlayer.pos.y = me.Math.clamp(dataP.move.pos.y, shadowPlayer.minY, shadowPlayer.maxY);
+          const dir = pb_root.Direction.__proto__[dataP.move.dir].toLowerCase();
+          if (shadowPlayer.__DIRECTION__ !== dir) {
+            rotateTank(shadowPlayer, dir);
+          }
+          follow(shadowPlayer)
+        }
+      }
+      if (dataP._type === "4") {
         if (othersPlayer[dataP.id]) {
           me.game.world.removeChild(othersPlayer[dataP.id]);
           delete othersPlayer[dataP.id];
@@ -191,22 +205,22 @@ var reloading = false;
 me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
   const yAxis = ['up', 'down'];
   if (keyCode === 32 && !reloading) {
-    var bX, bY, bD;
-    if (yAxis.indexOf(currentPlayer.__DIRECTION__) > -1) {
-      if (currentPlayer.__DIRECTION__ === 'down')
-        bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y + (currentPlayer.height / 2), bD = 'down';
-      else
-        bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y - (currentPlayer.height / 2) - (BULLET_SIZE/2), bD = 'up';
-    } else {
-      if (currentPlayer.__DIRECTION__ === 'right')
-        bX = currentPlayer.pos.x + (currentPlayer.width / 2), bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'right';
-      else
-        bX = currentPlayer.pos.x - (currentPlayer.width / 2) - (BULLET_SIZE/2), bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'left';
-    }
-    reloading = true;
-    const b = me.game.world.addChild(me.pool.pull("bullet", bX, bY))
-    b.__HITTER__ = currentPlayer.__ID__;
-    b.__DIRECTION__ = bD;
+    //var bX, bY, bD;
+    //if (yAxis.indexOf(currentPlayer.__DIRECTION__) > -1) {
+      //if (currentPlayer.__DIRECTION__ === 'down')
+        //bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y + (currentPlayer.height / 2), bD = 'down';
+      //else
+        //bX = currentPlayer.pos.x - (BULLET_SIZE/2), bY = currentPlayer.pos.y - (currentPlayer.height / 2) - (BULLET_SIZE/2), bD = 'up';
+    //} else {
+      //if (currentPlayer.__DIRECTION__ === 'right')
+        //bX = currentPlayer.pos.x + (currentPlayer.width / 2), bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'right';
+      //else
+        //bX = currentPlayer.pos.x - (currentPlayer.width / 2) - (BULLET_SIZE/2), bY = currentPlayer.pos.y - (BULLET_SIZE/2), bD = 'left';
+    //}
+    //reloading = true;
+    //const b = me.game.world.addChild(me.pool.pull("bullet", bX, bY))
+    //b.__HITTER__ = currentPlayer.__ID__;
+    //b.__DIRECTION__ = bD;
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(encodeMessage("3", {}));
     }
@@ -334,41 +348,41 @@ game.Bullet = me.Entity.extend({
         this.alwaysUpdate = true;
     },
     update : function (time) {
-      if (this.__DIRECTION__) {
-        if (this.__DIRECTION__ === 'down') {
-          this.pos.y += this.vel * time / 1000;
-          if (this.pos.y + this.height >= HEIGHT) {
-              me.game.world.removeChild(this);
-          }
-        } else if (this.__DIRECTION__ === 'up') {
-          this.pos.y -= this.vel * time / 1000;
-          if (this.pos.y - this.height <= 0) {
-              me.game.world.removeChild(this);
-          }
-        } else if (this.__DIRECTION__ === 'right') {
-          this.pos.x += this.vel * time / 1000;
-          if (this.pos.x + this.width >= WIDTH) {
-              me.game.world.removeChild(this);
-          }
-        } else if (this.__DIRECTION__ === 'left') {
-          this.pos.x -= this.vel * time / 1000;
-          if (this.pos.x - this.width <= 0) {
-              me.game.world.removeChild(this);
-          }
-        }
-      }
+      //if (this.__DIRECTION__) {
+        //if (this.__DIRECTION__ === 'down') {
+          //this.pos.y += this.vel * time / 1000;
+          //if (this.pos.y + this.height >= HEIGHT) {
+              //me.game.world.removeChild(this);
+          //}
+        //} else if (this.__DIRECTION__ === 'up') {
+          //this.pos.y -= this.vel * time / 1000;
+          //if (this.pos.y - this.height <= 0) {
+              //me.game.world.removeChild(this);
+          //}
+        //} else if (this.__DIRECTION__ === 'right') {
+          //this.pos.x += this.vel * time / 1000;
+          //if (this.pos.x + this.width >= WIDTH) {
+              //me.game.world.removeChild(this);
+          //}
+        //} else if (this.__DIRECTION__ === 'left') {
+          //this.pos.x -= this.vel * time / 1000;
+          //if (this.pos.x - this.width <= 0) {
+              //me.game.world.removeChild(this);
+          //}
+        //}
+      //}
       // SERVER-SIDE
       // https://www.khanacademy.org/math/geometry/hs-geo-analytic-geometry/hs-geo-distance-and-midpoints/v/distance-formula
-      for (var t in othersPlayer) {
-        const v = Math.sqrt(Math.pow((this.pos.x - othersPlayer[t].pos.x), 2) + Math.pow((this.pos.y - othersPlayer[t].pos.y), 2));
-        if (v <= 10) {
-          othersPlayer[t].__onHitted__(this.__HITTER__);
-          me.game.world.removeChild(othersPlayer[t]);
-          me.game.world.removeChild(this);
-          delete othersPlayer[othersPlayer[t].__ID__];
-        }
+      //for (var t in othersPlayer) {
+        //const v = Math.sqrt(Math.pow((this.pos.x - othersPlayer[t].pos.x), 2) + Math.pow((this.pos.y - othersPlayer[t].pos.y), 2));
+        //if (v <= 10) {
+          //othersPlayer[t].__onHitted__(this.__HITTER__);
+          //me.game.world.removeChild(othersPlayer[t]);
+          //me.game.world.removeChild(this);
+          //delete othersPlayer[othersPlayer[t].__ID__];
+        //}
         
-      }
+      //}
       return true;
     }
 });

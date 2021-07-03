@@ -102,10 +102,19 @@ async def decode_message(s):
 
     # raise ValueError(f"Invalid message type: {message_type}")
 
-async def broadcast(id_):
+async def broadcastPlayer(id_):
     info_message = tank_pb2.InfoBroadcast(players=await get_positions(id_))
     for _, player in PLAYERS.items():
         await player.socket.send(await encode_message("0", info_message))
+
+async def broadcastBullet():
+    global BULLETS
+    bullets = dict()
+    for key, value in BULLETS.items():
+      bullets[key] = value
+    info_message = tank_pb2.BulletBroadcast(bullets=bullets)
+    for _, player in PLAYERS.items():
+        await player.socket.send(await encode_message("1", info_message))
 
 async def accept(ws, path):
     nick_check = re.compile("[A-Za-z0-9]+").match
@@ -115,11 +124,11 @@ async def accept(ws, path):
         nick = message.nick
     if nick and not nick_check(nick):
         err = tank_pb2.ErrorMessage("Nick may contain only alphanumeric characters")
-        await ws.send(await encode_message("4", err))
+        await ws.send(await encode_message("5", err))
         return
     if nick and len(nick) > 12:
         err = tank_pb2.ErrorMessage("Nick must be 12 characters or less")
-        await ws.send(await encode_message("4", err))
+        await ws.send(await encode_message("5", err))
         return
 
     id_ = await init(nick, ws)
@@ -128,14 +137,15 @@ async def accept(ws, path):
     init_message.move.pos.y = PLAYERS[id_].pos.y
     init_message.move.dir = PLAYERS[id_].dir_.value
     await ws.send(await encode_message("2", init_message))
-    await broadcast(id_)
+    await broadcastPlayer(id_)
+    await broadcastBullet()
     async for message in ws:
         # hit race-condition
         try:
             t, message = await decode_message(await ws.recv())
             if t == "0":
                 await pos(id_, message)
-                await broadcast(id_)
+                await broadcastPlayer(id_)
             if t == "3":
                 bX: float = 0
                 bY: float = 0
@@ -160,13 +170,13 @@ async def accept(ws, path):
                 message.pos.y = bY
                 message.dir = PLAYERS[id_].dir_.value
                 BULLETS[message.id] = message
-                print(BULLETS)
+                await broadcastBullet()
         except:
           pass
 
     PLAYERS.pop(id_)
     for player in PLAYERS.values():
-      await player.socket.send(await encode_message("3", tank_pb2.Disconnect(id=id_)))
+      await player.socket.send(await encode_message("4", tank_pb2.Disconnect(id=id_)))
         
 if __name__ == "__main__":
     if len(sys.argv) not in (1, 2):
