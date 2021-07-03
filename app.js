@@ -362,6 +362,7 @@ game.Bullet = me.Entity.extend({
         const v = Math.sqrt(Math.pow((this.pos.x - othersPlayer[t].pos.x), 2) + Math.pow((this.pos.y - othersPlayer[t].pos.y), 2));
         if (v <= 10) {
           me.game.world.removeChild(othersPlayer[t]);
+          me.game.world.removeChild(this);
           delete othersPlayer[othersPlayer[t].__ID__];
         }
         
