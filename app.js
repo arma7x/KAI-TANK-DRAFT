@@ -135,6 +135,7 @@ var game = {
           } else if (bullet.pos.x === -1 || bullet.pos.y === -1) {
             // console.log("Remove", bullet.id);
             me.game.world.removeChild(bullets[bullet.id]);
+            delete bullets[bullet.id];
           }
         }
       }
