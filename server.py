@@ -73,7 +73,9 @@ async def init(nick, ws):
     id_ = await generate_id()
     if nick is None:
         nick = f"p{str(id_)[:5]}"
-    PLAYERS[id_] = Player(nick=nick, pos=Position(x=random.randint(10, (MAP_WIDTH - 10)), y=random.randint(10, (MAP_HEIGHT - 10))), socket=ws)
+    rand_x = random.randint(16, MAP_WIDTH - 16)
+    rand_y = random.randint(16, MAP_HEIGHT - 16)
+    PLAYERS[id_] = Player(nick=nick, pos=Position(x=rand_x, y=rand_y), socket=ws)
     # PLAYERS[id_] = Player(nick=nick, pos=Position(x=271, y=297), socket=ws)
     # PLAYERS[id_] = Player(nick=nick, pos=Position(x=100, y=100), socket=ws)
     return id_
@@ -111,7 +113,7 @@ async def decode_message(s):
 
 async def broadcastPlayer(id_):
     info_message = tank_pb2.InfoBroadcast(players=await get_positions(id_))
-    for _, player in PLAYERS.items():
+    for player in PLAYERS.values():
         await player.socket.send(await encode_message("0", info_message))
 
 async def broadcastBullet():
@@ -120,12 +122,12 @@ async def broadcastBullet():
     for key, value in BULLETS.items():
         bullets[key] = value
     info_message = tank_pb2.BulletBroadcast(bullets=bullets)
-    for _, player in PLAYERS.items():
+    for player in PLAYERS.values():
         await player.socket.send(await encode_message("1", info_message))
 
 async def periodic():
     # calculate bullet movement
-    # x = -1 or y = -1 if bullet position is overmap area or hitted any tank
+    # x = -1 or y = -1 if bullet position is overmap area or hit any tank
     global BULLETS
     while True:
         off_bullets = dict()
@@ -135,7 +137,7 @@ async def periodic():
             # https://www.khanacademy.org/math/geometry/hs-geo-analytic-geometry/hs-geo-distance-and-midpoints/v/distance-formula
             for plyr_id, plyr in PLAYERS.items():
                 if (value.shooter != plyr_id):
-                    v = math.sqrt(math.pow((value.pos.x - plyr.pos.x), 2) + math.pow((value.pos.y - plyr.pos.y), 2))
+                    v = math.sqrt((value.pos.x - plyr.pos.x)**2 + (value.pos.y - plyr.pos.y)**2)
                     if (v <= 10.0):
                         value.pos.x = -1
                         value.pos.y = -1
@@ -143,7 +145,7 @@ async def periodic():
                         off_bullets[key] = value
                         break
 
-            if (expired == False):
+            if not expired:
                 if (value.dir == Direction.DOWN.value):
                   value.pos.y += BULLET_VELOCITY * TICKING / 1000
                   if (value.pos.y + BULLET_SIZE >= MAP_HEIGHT):
@@ -169,12 +171,12 @@ async def periodic():
                       off_bullets[key] = value
                       expired = True
 
-        if (len(off_bullets) > 0):
-            for key, _ in off_bullets.items():
-                if (key in BULLETS.keys()):
+        if len(off_bullets) > 0:
+            for key in off_bullets.keys():
+                if key in BULLETS.keys():
                     BULLETS.pop(key)
             info_message = tank_pb2.BulletBroadcast(bullets=off_bullets)
-            for _, player in PLAYERS.items():
+            for player in PLAYERS.values():
                 await player.socket.send(await encode_message("1", info_message))
         await asyncio.sleep(TICKING / 1000)
 
@@ -213,16 +215,17 @@ async def accept(ws, path):
               bY: float = 0
               message.id = await generate_id()
               message.shooter = id_
-
-              if (PLAYERS[id_].dir_ == Direction.UP or PLAYERS[id_].dir_ == Direction.DOWN):
-                  if (PLAYERS[id_].dir_ == Direction.DOWN):
+                
+              # TODO: Use hashtable/dict here
+              if PLAYERS[id_].dir_ in (Direction.UP, Direction.DOWN):
+                  if PLAYERS[id_].dir_ == Direction.DOWN:
                       bX = PLAYERS[id_].pos.x - (BULLET_SIZE / 2)
                       bY = PLAYERS[id_].pos.y + (TANK_HEIGHT / 2)
                   else:
                       bX = PLAYERS[id_].pos.x - (BULLET_SIZE / 2)
                       bY = PLAYERS[id_].pos.y - (TANK_HEIGHT / 2) - (BULLET_SIZE / 2)
               else:
-                  if (PLAYERS[id_].dir_ == Direction.RIGHT):
+                  if PLAYERS[id_].dir_ == Direction.RIGHT:
                       bX = PLAYERS[id_].pos.x + (TANK_WIDTH / 2)
                       bY = PLAYERS[id_].pos.y - (BULLET_SIZE / 2)
                   else:
