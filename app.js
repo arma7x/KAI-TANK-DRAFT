@@ -191,12 +191,12 @@ var game = {
 
 game.PlayScreen = me.Stage.extend({
   onResetEvent: function() {
-    //for (var y=(TILES/2);y<=HEIGHT;y=y+TILES) {
-      //for (var x=(TILES/2);x<=WIDTH;x=x+TILES) {
-        //me.game.world.addChild(me.pool.pull("grass", x, y))
-      //}
-    //}
-    me.game.world.addChild(me.pool.pull("map", WIDTH/2, HEIGHT/2))
+    for (var y=(TILES/2);y<=HEIGHT;y=y+TILES) {
+      for (var x=(TILES/2);x<=WIDTH;x=x+TILES) {
+        me.game.world.addChild(me.pool.pull("grass", x, y))
+      }
+    }
+    // me.game.world.addChild(me.pool.pull("map", WIDTH/2, HEIGHT/2))
     me.input.bindKey(me.input.KEY.LEFT, "left");
     me.input.bindKey(me.input.KEY.RIGHT, "right");
     me.input.bindKey(me.input.KEY.UP, "up");
@@ -247,7 +247,6 @@ game.GrassTile = me.Sprite.extend({
         image: me.loader.getImage(`grass_${n}`),
       }
     ]);
-    this.scale(TILES/32, TILES/32);
   }
 });
 

@@ -178,40 +178,40 @@ async def accept(ws, path):
     await ws.send(await encode_message("2", init_message))
     await broadcastPlayer(id_)
     await broadcastBullet()
-    async for message in ws:
-        # hit race-condition
-        try:
-            t, message = await decode_message(await ws.recv())
-            if t == "0":
-                await pos(id_, message)
-                await broadcastPlayer(id_)
-            if t == "3":
-                bX: float = 0
-                bY: float = 0
-                message.id = await generate_id()
-                message.shooter = id_
+    # hit race-condition
+    try:
+      async for message in ws:
+          t, message = await decode_message(await ws.recv())
+          if t == "0":
+              await pos(id_, message)
+              await broadcastPlayer(id_)
+          if t == "3":
+              bX: float = 0
+              bY: float = 0
+              message.id = await generate_id()
+              message.shooter = id_
 
-                if (PLAYERS[id_].dir_ == Direction.UP or PLAYERS[id_].dir_ == Direction.DOWN):
-                    if (PLAYERS[id_].dir_ == Direction.DOWN):
-                        bX = PLAYERS[id_].pos.x - (BULLET_SIZE / 2)
-                        bY = PLAYERS[id_].pos.y + (TANK_HEIGHT / 2)
-                    else:
-                        bX = PLAYERS[id_].pos.x - (BULLET_SIZE / 2)
-                        bY = PLAYERS[id_].pos.y - (TANK_HEIGHT / 2) - (BULLET_SIZE / 2)
-                else:
-                    if (PLAYERS[id_].dir_ == Direction.RIGHT):
-                        bX = PLAYERS[id_].pos.x + (TANK_WIDTH / 2)
-                        bY = PLAYERS[id_].pos.y - (BULLET_SIZE / 2)
-                    else:
-                        bX = PLAYERS[id_].pos.x - (TANK_WIDTH / 2) - (BULLET_SIZE / 2)
-                        bY = PLAYERS[id_].pos.y - (BULLET_SIZE / 2)
-                message.pos.x = bX
-                message.pos.y = bY
-                message.dir = PLAYERS[id_].dir_.value
-                BULLETS[message.id] = message
-                await broadcastBullet()
-        except:
-          pass
+              if (PLAYERS[id_].dir_ == Direction.UP or PLAYERS[id_].dir_ == Direction.DOWN):
+                  if (PLAYERS[id_].dir_ == Direction.DOWN):
+                      bX = PLAYERS[id_].pos.x - (BULLET_SIZE / 2)
+                      bY = PLAYERS[id_].pos.y + (TANK_HEIGHT / 2)
+                  else:
+                      bX = PLAYERS[id_].pos.x - (BULLET_SIZE / 2)
+                      bY = PLAYERS[id_].pos.y - (TANK_HEIGHT / 2) - (BULLET_SIZE / 2)
+              else:
+                  if (PLAYERS[id_].dir_ == Direction.RIGHT):
+                      bX = PLAYERS[id_].pos.x + (TANK_WIDTH / 2)
+                      bY = PLAYERS[id_].pos.y - (BULLET_SIZE / 2)
+                  else:
+                      bX = PLAYERS[id_].pos.x - (TANK_WIDTH / 2) - (BULLET_SIZE / 2)
+                      bY = PLAYERS[id_].pos.y - (BULLET_SIZE / 2)
+              message.pos.x = bX
+              message.pos.y = bY
+              message.dir = PLAYERS[id_].dir_.value
+              BULLETS[message.id] = message
+              await broadcastBullet()
+    except:
+      pass
 
     PLAYERS.pop(id_)
     for player in PLAYERS.values():
