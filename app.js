@@ -133,11 +133,9 @@ var game = {
             bullets[bullet.id] = b;
             // console.log("Add", bullet.id);
           } else if (bullet.pos.x <= 0 || bullet.pos.y <= 0) {
-            console.log("Remove", bullet.id);
+            // console.log("Remove", bullet.id);
             me.game.world.removeChild(bullets[bullet.id]);
             delete bullets[bullet.id];
-          } else {
-            console.log(bullet.pos.x, bullet.pos.y);
           }
         }
       }
@@ -366,17 +364,6 @@ game.Bullet = me.Entity.extend({
           this.pos.x += this.vel * time / 1000;
         } else if (this.__DIRECTION__ === 'left') {
           this.pos.x -= this.vel * time / 1000;
-        }
-      }
-      // SERVER-SIDE
-       https://www.khanacademy.org/math/geometry/hs-geo-analytic-geometry/hs-geo-distance-and-midpoints/v/distance-formula
-      for (var t in othersPlayer) {
-        const v = Math.sqrt(Math.pow((this.pos.x - othersPlayer[t].pos.x), 2) + Math.pow((this.pos.y - othersPlayer[t].pos.y), 2));
-        if (v <= 10) {
-          //othersPlayer[t].__onHitted__(this.__HITTER__);
-          //me.game.world.removeChild(othersPlayer[t]);
-          //me.game.world.removeChild(this);
-          //delete othersPlayer[othersPlayer[t].__ID__];
         }
       }
       return true;
