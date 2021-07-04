@@ -65,8 +65,8 @@ function decodeMessage(s) {
 
 var game = {
   resources: [
-    { name: "map", type: "image", "src": "/map.jpg", }, // tank-green.png
-    { name: "greentank", type: "image", "src": "/tanks/tile000_20.png", }, // tank-green.png
+    { name: "map", type: "image", "src": "/map.png", }, // tank-green.png
+    { name: "greentank", type: "image", "src": "/tanks/tile000.png", }, // tank-green.png
     { name: "grass_1", type: "image", "src": "/tiles/tile000.png", },
     { name: "grass_2", type: "image", "src": "/tiles/tile001.png", },
     { name: "grass_3", type: "image", "src": "/tiles/tile002.png", },
@@ -346,7 +346,7 @@ game.Bullet = me.Entity.extend({
             destroy : function () {},
             draw : function (renderer) {
                 var color = renderer.getColor();
-                renderer.setColor('#000');
+                renderer.setColor('#FF8200');
                 renderer.fillRect(0, 0, this.width, this.height);
                 renderer.setColor(color);
             }
