@@ -13,8 +13,12 @@ import tank_pb2
 MAP_WIDTH = 240
 MAP_HEIGHT = 320
 BULLET_SIZE = 4
+BULLET_VELOCITY = 150
 TANK_WIDTH = 16
 TANK_HEIGHT = 16
+# 1000/60FPS
+TICKING = 1000/60
+
 
 PLAYERS = dict()
 BULLETS = dict()
@@ -126,22 +130,22 @@ async def periodic():
         off_bullets = dict()
         for key, value in BULLETS.items():
             if (value.dir == Direction.DOWN.value):
-              value.pos.y += 150 * 16 / 1000
+              value.pos.y += BULLET_VELOCITY * TICKING / 1000
               if (value.pos.y + BULLET_SIZE >= MAP_HEIGHT):
                   value.pos.y = -1
                   off_bullets[key] = value
             elif (value.dir == Direction.UP.value):
-              value.pos.y -= 150 * 16 / 1000
+              value.pos.y -= BULLET_VELOCITY * TICKING / 1000
               if (value.pos.y - BULLET_SIZE <= 0):
                   value.pos.y = -1
                   off_bullets[key] = value
             elif (value.dir == Direction.RIGHT.value):
-              value.pos.x += 150 * 16 / 1000
+              value.pos.x += BULLET_VELOCITY * TICKING / 1000
               if (value.pos.x + BULLET_SIZE >= MAP_WIDTH):
                   value.pos.x = -1
                   off_bullets[key] = value
             elif (value.dir == Direction.LEFT.value):
-              value.pos.x -= 150 * 16 / 1000
+              value.pos.x -= BULLET_VELOCITY * TICKING / 1000
               if (value.pos.x - BULLET_SIZE <= 0):
                   value.pos.x = -1
                   off_bullets[key] = value
@@ -153,7 +157,7 @@ async def periodic():
             info_message = tank_pb2.BulletBroadcast(bullets=off_bullets)
             for _, player in PLAYERS.items():
                 await player.socket.send(await encode_message("1", info_message))
-        await asyncio.sleep(0.016)
+        await asyncio.sleep(TICKING / 1000)
 
 async def accept(ws, path):
     nick_check = re.compile("[A-Za-z0-9]+").match
