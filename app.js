@@ -191,12 +191,13 @@ var game = {
 
 game.PlayScreen = me.Stage.extend({
   onResetEvent: function() {
-    for (var y=(TILES/2);y<=HEIGHT;y=y+TILES) {
-      for (var x=(TILES/2);x<=WIDTH;x=x+TILES) {
-        me.game.world.addChild(me.pool.pull("grass", x, y))
-      }
-    }
-    // me.game.world.addChild(me.pool.pull("map", WIDTH/2, HEIGHT/2))
+    //for (var y=(TILES/2);y<=HEIGHT;y=y+TILES) {
+      //for (var x=(TILES/2);x<=WIDTH;x=x+TILES) {
+        //me.game.world.addChild(me.pool.pull("grass", x, y))
+      //}
+    //}
+    // less memory
+    me.game.world.addChild(me.pool.pull("map", WIDTH/2, HEIGHT/2))
     me.input.bindKey(me.input.KEY.LEFT, "left");
     me.input.bindKey(me.input.KEY.RIGHT, "right");
     me.input.bindKey(me.input.KEY.UP, "up");
@@ -336,7 +337,7 @@ game.Tank = me.Sprite.extend({
 game.Bullet = me.Entity.extend({
     init : function (x, y) {
         this._super(me.Entity, "init", [x, y, { width: BULLET_SIZE, height: BULLET_SIZE }]);
-        this.vel = 65;
+        this.vel = 150;
         this.body.collisionType = me.collision.types.NO_OBJECT;
         this.renderable = new (me.Renderable.extend({
             init : function () {

@@ -126,22 +126,22 @@ async def periodic():
         off_bullets = dict()
         for key, value in BULLETS.items():
             if (value.dir == Direction.DOWN.value):
-              value.pos.y += 65 * 16 / 1000
+              value.pos.y += 150 * 16 / 1000
               if (value.pos.y + BULLET_SIZE >= MAP_HEIGHT):
                   value.pos.y = -1
                   off_bullets[key] = value
             elif (value.dir == Direction.UP.value):
-              value.pos.y -= 65 * 16 / 1000
+              value.pos.y -= 150 * 16 / 1000
               if (value.pos.y - BULLET_SIZE <= 0):
                   value.pos.y = -1
                   off_bullets[key] = value
             elif (value.dir == Direction.RIGHT.value):
-              value.pos.x += 65 * 16 / 1000
+              value.pos.x += 150 * 16 / 1000
               if (value.pos.x + BULLET_SIZE >= MAP_WIDTH):
                   value.pos.x = -1
                   off_bullets[key] = value
             elif (value.dir == Direction.LEFT.value):
-              value.pos.x -= 65 * 16 / 1000
+              value.pos.x -= 150 * 16 / 1000
               if (value.pos.x - BULLET_SIZE <= 0):
                   value.pos.x = -1
                   off_bullets[key] = value
