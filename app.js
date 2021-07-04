@@ -65,6 +65,7 @@ function decodeMessage(s) {
 
 var game = {
   resources: [
+    { name: "map", type: "image", "src": "/map.jpg", }, // tank-green.png
     { name: "greentank", type: "image", "src": "/tanks/tile000_20.png", }, // tank-green.png
     { name: "grass_1", type: "image", "src": "/tiles/tile000.png", },
     { name: "grass_2", type: "image", "src": "/tiles/tile001.png", },
@@ -78,6 +79,7 @@ var game = {
     me.pool.register("grass", game.Tank);
     me.pool.register("grass", game.GrassTile);
     me.pool.register("bullet", game.Bullet);
+    me.pool.register("map", game.Map);
     this.playScreen = new game.PlayScreen();
     me.state.set(me.state.PLAY, this.playScreen);
     me.state.change(me.state.PLAY);
@@ -189,11 +191,12 @@ var game = {
 
 game.PlayScreen = me.Stage.extend({
   onResetEvent: function() {
-    for (var y=(TILES/2);y<=HEIGHT;y=y+TILES) {
-      for (var x=(TILES/2);x<=WIDTH;x=x+TILES) {
-        me.game.world.addChild(me.pool.pull("grass", x, y))
-      }
-    }
+    //for (var y=(TILES/2);y<=HEIGHT;y=y+TILES) {
+      //for (var x=(TILES/2);x<=WIDTH;x=x+TILES) {
+        //me.game.world.addChild(me.pool.pull("grass", x, y))
+      //}
+    //}
+    me.game.world.addChild(me.pool.pull("map", WIDTH/2, HEIGHT/2))
     me.input.bindKey(me.input.KEY.LEFT, "left");
     me.input.bindKey(me.input.KEY.RIGHT, "right");
     me.input.bindKey(me.input.KEY.UP, "up");
@@ -220,6 +223,18 @@ me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
     }, 300);
   }
 
+});
+
+game.Map = me.Sprite.extend({
+  init: function(x, y) {
+    this._super(me.Sprite, "init", [
+      x,
+      y,
+      {
+        image: me.loader.getImage('map'),
+      }
+    ]);
+  }
 });
 
 game.GrassTile = me.Sprite.extend({
