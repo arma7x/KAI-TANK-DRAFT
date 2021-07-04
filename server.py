@@ -73,7 +73,7 @@ async def init(nick, ws):
     id_ = await generate_id()
     if nick is None:
         nick = f"p{str(id_)[:5]}"
-    PLAYERS[id_] = Player(nick=nick, pos=Position(x=random.randint(10, (MAP_HEIGHT - 10)), y=random.randint(10, (MAP_HEIGHT - 10))), socket=ws)
+    PLAYERS[id_] = Player(nick=nick, pos=Position(x=random.randint(10, (MAP_WIDTH - 10)), y=random.randint(10, (MAP_HEIGHT - 10))), socket=ws)
     # PLAYERS[id_] = Player(nick=nick, pos=Position(x=271, y=297), socket=ws)
     # PLAYERS[id_] = Player(nick=nick, pos=Position(x=100, y=100), socket=ws)
     return id_
@@ -131,44 +131,43 @@ async def periodic():
         off_bullets = dict()
         for key, value in BULLETS.items():
             expired = False
-            if (value.dir == Direction.DOWN.value):
-              value.pos.y += BULLET_VELOCITY * TICKING / 1000
-              if (value.pos.y + BULLET_SIZE >= MAP_HEIGHT):
-                  value.pos.y = -1
-                  off_bullets[key] = value
-                  expired = True
-            elif (value.dir == Direction.UP.value):
-              value.pos.y -= BULLET_VELOCITY * TICKING / 1000
-              if (value.pos.y - BULLET_SIZE <= 0):
-                  value.pos.y = -1
-                  off_bullets[key] = value
-                  expired = True
-            elif (value.dir == Direction.RIGHT.value):
-              value.pos.x += BULLET_VELOCITY * TICKING / 1000
-              if (value.pos.x + BULLET_SIZE >= MAP_WIDTH):
-                  value.pos.x = -1
-                  off_bullets[key] = value
-                  expired = True
-            elif (value.dir == Direction.LEFT.value):
-              value.pos.x -= BULLET_VELOCITY * TICKING / 1000
-              if (value.pos.x - BULLET_SIZE <= 0):
-                  value.pos.x = -1
-                  off_bullets[key] = value
-                  expired = True
 
-            if (expired == False and value.pos.x != -1 and value.pos.y != -1):
-                # https://www.khanacademy.org/math/geometry/hs-geo-analytic-geometry/hs-geo-distance-and-midpoints/v/distance-formula
-                for plyr_id, plyr in PLAYERS.items():
-                    if (value.shooter != plyr_id):
-                        v = math.sqrt(math.pow((value.pos.x - plyr.pos.x), 2) + math.pow((value.pos.y - plyr.pos.y), 2))
-                        print(value.pos.x, value.pos.y)
-                        print(plyr.pos.x, plyr.pos.y)
-                        print(v, v <= 10.0)
-                        print("---------------------------------------")
-                        if (v <= 10.0 == True):
-                            value.pos.x = -1
-                            value.pos.y = -1
-                            print("Confirm", v, v <= 10.0)
+            # https://www.khanacademy.org/math/geometry/hs-geo-analytic-geometry/hs-geo-distance-and-midpoints/v/distance-formula
+            for plyr_id, plyr in PLAYERS.items():
+                if (value.shooter != plyr_id):
+                    v = math.sqrt(math.pow((value.pos.x - plyr.pos.x), 2) + math.pow((value.pos.y - plyr.pos.y), 2))
+                    if (v <= 10.0):
+                        value.pos.x = -1
+                        value.pos.y = -1
+                        expired = True
+                        off_bullets[key] = value
+                        break
+
+            if (expired == False):
+                if (value.dir == Direction.DOWN.value):
+                  value.pos.y += BULLET_VELOCITY * TICKING / 1000
+                  if (value.pos.y + BULLET_SIZE >= MAP_HEIGHT):
+                      value.pos.y = -1
+                      off_bullets[key] = value
+                      expired = True
+                elif (value.dir == Direction.UP.value):
+                  value.pos.y -= BULLET_VELOCITY * TICKING / 1000
+                  if (value.pos.y - BULLET_SIZE <= 0):
+                      value.pos.y = -1
+                      off_bullets[key] = value
+                      expired = True
+                elif (value.dir == Direction.RIGHT.value):
+                  value.pos.x += BULLET_VELOCITY * TICKING / 1000
+                  if (value.pos.x + BULLET_SIZE >= MAP_WIDTH):
+                      value.pos.x = -1
+                      off_bullets[key] = value
+                      expired = True
+                elif (value.dir == Direction.LEFT.value):
+                  value.pos.x -= BULLET_VELOCITY * TICKING / 1000
+                  if (value.pos.x - BULLET_SIZE <= 0):
+                      value.pos.x = -1
+                      off_bullets[key] = value
+                      expired = True
 
         if (len(off_bullets) > 0):
             for key, _ in off_bullets.items():

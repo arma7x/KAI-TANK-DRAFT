@@ -132,10 +132,12 @@ var game = {
             b.__DIRECTION__ = dir;
             bullets[bullet.id] = b;
             // console.log("Add", bullet.id);
-          } else if (bullet.pos.x === -1 || bullet.pos.y === -1) {
-            // console.log("Remove", bullet.id);
+          } else if (bullet.pos.x <= 0 || bullet.pos.y <= 0) {
+            console.log("Remove", bullet.id);
             me.game.world.removeChild(bullets[bullet.id]);
             delete bullets[bullet.id];
+          } else {
+            console.log(bullet.pos.x, bullet.pos.y);
           }
         }
       }
@@ -371,7 +373,6 @@ game.Bullet = me.Entity.extend({
       for (var t in othersPlayer) {
         const v = Math.sqrt(Math.pow((this.pos.x - othersPlayer[t].pos.x), 2) + Math.pow((this.pos.y - othersPlayer[t].pos.y), 2));
         if (v <= 10) {
-          console.log(v);
           //othersPlayer[t].__onHitted__(this.__HITTER__);
           //me.game.world.removeChild(othersPlayer[t]);
           //me.game.world.removeChild(this);
