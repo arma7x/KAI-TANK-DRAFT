@@ -216,13 +216,13 @@ var reloading = false;
 me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
   const yAxis = ['up', 'down'];
   if (keyCode === 32 && !reloading) {
+    reloading = true;
     if (socket && socket.readyState === WebSocket.OPEN) {
-      // console.log('hit');
       socket.send(encodeMessage("3", {}));
     }
     setTimeout(() => {
       reloading = false
-    }, 300);
+    }, 100);
   }
 
 });
