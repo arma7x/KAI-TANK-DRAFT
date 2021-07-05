@@ -99,7 +99,6 @@ var game = {
           if (p !== myId && myId !== false) {
             const dir = pb_root.Direction.__proto__[move.dir].toLowerCase();
             if (othersPlayer[p] == null && move.pos.x >= 0 && move.pos.y >= 0 && move.hp > 0) {
-              console.log(p, "joined");
               othersPlayer[p] = me.game.world.addChild(me.pool.pull("greentank"));
               othersPlayer[p].__ID__ = p
               othersPlayer[p].__HP__ = move.hp
@@ -174,20 +173,15 @@ var game = {
           if (p !== myId) {
             if (d.hp <= 0) {
               if (othersPlayer[p]) {
-                console.log("REMOVE", p);
                 me.game.world.removeChild(othersPlayer[p]);
                 delete othersPlayer[p];
               }
-            } else if (d.hp !== 100) {
-              console.log(p, "hitted");
             }
           } else {
             if (d.hp <= 0) {
               currentPlayer.__HP__ = d.hp;
-              console.log("REMOVE", "ME");
             } else if (d.hp !== 100) {
-              currentPlayer.__HP__ = d.hp
-              console.log("Me", "hitted");
+              currentPlayer.__HP__ = d.hp;
             }
           }
         }
@@ -309,8 +303,11 @@ game.Tank = me.Sprite.extend({
     this._super(me.Sprite, "update", [time]);
 
     if (this.__HP__ <= 0 && this.__ID__ === myId) {
-      console.log(this.__ID__, myId);
       me.game.world.removeChild(this); // emmm not removed
+      if (DEBUG)
+        me.game.world.removeChild(shadowPlayer)
+      shadowPlayer = null
+      currentPlayer = null
       return true;
     }
 
