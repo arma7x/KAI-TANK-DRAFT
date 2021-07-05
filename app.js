@@ -122,7 +122,6 @@ var game = {
         }
       }
       if (dataP._type === "1") {
-        // bullets
         for (var x in dataP.bullets) {
           const bullet = dataP.bullets[x];
           if (bullets[bullet.id] == null) {
@@ -131,9 +130,7 @@ var game = {
             b.__HITTER__ = bullet.shooter;
             b.__DIRECTION__ = dir;
             bullets[bullet.id] = b;
-            // console.log("Add", bullet.id);
           } else if (bullet.pos.x <= 0 || bullet.pos.y <= 0) {
-            // console.log("Remove", bullet.id);
             me.game.world.removeChild(bullets[bullet.id]);
             delete bullets[bullet.id];
           }
@@ -192,12 +189,6 @@ var game = {
 
 game.PlayScreen = me.Stage.extend({
   onResetEvent: function() {
-    //for (var y=(TILES/2);y<=HEIGHT;y=y+TILES) {
-      //for (var x=(TILES/2);x<=WIDTH;x=x+TILES) {
-        //me.game.world.addChild(me.pool.pull("grass", x, y))
-      //}
-    //}
-    // less memory
     me.game.world.addChild(me.pool.pull("map", WIDTH/2, HEIGHT/2))
     me.input.bindKey(me.input.KEY.LEFT, "left");
     me.input.bindKey(me.input.KEY.RIGHT, "right");
@@ -218,6 +209,7 @@ me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
   if (keyCode === 32 && !reloading) {
     reloading = true;
     if (socket && socket.readyState === WebSocket.OPEN) {
+      console.log("Pew Pew");
       socket.send(encodeMessage("3", {}));
     }
     setTimeout(() => {
@@ -283,9 +275,6 @@ game.Tank = me.Sprite.extend({
     if (other.body.collisionType === me.collision.types.ENEMY_OBJECT) {
       return true;
     }
-  },
-  __onHitted__: function(hitter) {
-    // console.log(this.__ID__, 'hitted by', hitter);
   },
   update: function(time) {
     this._super(me.Sprite, "update", [time]);
