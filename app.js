@@ -112,14 +112,12 @@ var game = {
               othersPlayer[p].pos.y = me.Math.clamp(move.pos.y, othersPlayer[p].minY, othersPlayer[p].maxY);
             }
           } else if (DEBUG && shadowPlayer && p === myId && myId !== false) {
-            //setTimeout(() => {
-              const dir = pb_root.Direction.__proto__[move.dir].toLowerCase();
-              if (shadowPlayer.__DIRECTION__ !== dir) {
-                rotateTank(shadowPlayer, dir);
-              }
-              shadowPlayer.pos.x = me.Math.clamp(move.pos.x, shadowPlayer.minX, shadowPlayer.maxX);
-              shadowPlayer.pos.y = me.Math.clamp(move.pos.y, shadowPlayer.minY, shadowPlayer.maxY);
-            //}, 65); // stimulate lag
+            const dir = pb_root.Direction.__proto__[move.dir].toLowerCase();
+            if (shadowPlayer.__DIRECTION__ !== dir) {
+              rotateTank(shadowPlayer, dir);
+            }
+            shadowPlayer.pos.x = me.Math.clamp(move.pos.x, shadowPlayer.minX, shadowPlayer.maxX);
+            shadowPlayer.pos.y = me.Math.clamp(move.pos.y, shadowPlayer.minY, shadowPlayer.maxY);
           }
         }
       }
@@ -186,8 +184,6 @@ var game = {
           } else {
             if (d.hp <= 0) {
               currentPlayer.__HP__ = d.hp;
-              // me.game.world.removeChild(currentPlayer);
-              // currentPlayer = null
               console.log("REMOVE", "ME");
             } else if (d.hp !== 100) {
               currentPlayer.__HP__ = d.hp
@@ -198,7 +194,9 @@ var game = {
       }
     };
     socket.onopen = () => {
-      socket.send(JSON.stringify({ping: true}));
+      setTimeout(() => {
+        socket.send(JSON.stringify({ping: true}));
+      }, 500);
     }
   },
   onload: function () {
@@ -275,7 +273,7 @@ game.GrassTile = me.Sprite.extend({
 });
 
 game.Tank = me.Sprite.extend({
-  init: function(x=0,y=0) {
+  init: function(x=20,y=20) {
     this._super(me.Sprite, "init", [
       x,
       y,
@@ -310,7 +308,8 @@ game.Tank = me.Sprite.extend({
   update: function(time) {
     this._super(me.Sprite, "update", [time]);
 
-    if (currentPlayer.__HP__ <= 0 && this.__ID__ === myId) {
+    if (this.__HP__ <= 0 && this.__ID__ === myId) {
+      console.log(this.__ID__, myId);
       me.game.world.removeChild(this); // emmm not removed
       return true;
     }
