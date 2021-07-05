@@ -73,8 +73,8 @@ async def init(nick, ws):
     id_ = await generate_id()
     if nick is None:
         nick = f"p{str(id_)[:5]}"
-    rand_x = random.randint(16, MAP_WIDTH - 16)
-    rand_y = random.randint(16, MAP_HEIGHT - 16)
+    rand_x = random.randint(TANK_WIDTH / 2, MAP_WIDTH - TANK_WIDTH / 2)
+    rand_y = random.randint(TANK_HEIGHT / 2, MAP_HEIGHT - TANK_HEIGHT / 2)
     PLAYERS[id_] = Player(nick=nick, pos=Position(x=rand_x, y=rand_y), socket=ws)
     # PLAYERS[id_] = Player(nick=nick, pos=Position(x=271, y=297), socket=ws)
     # PLAYERS[id_] = Player(nick=nick, pos=Position(x=100, y=100), socket=ws)
