@@ -143,10 +143,10 @@ async def periodic():
                         value.pos.y = -1
                         expired = True
                         off_bullets[key] = value
-                        PLAYERS[plyr_id].hp -= 5
-                        # if (PLAYERS[plyr_id].hp == 0):
-                            # PLAYERS[plyr_id].pos.x = -1
-                            # PLAYERS[plyr_id].pos.y = -1
+                        PLAYERS[plyr_id].hp -= 10
+                        if (PLAYERS[plyr_id].hp == 0):
+                            PLAYERS[plyr_id].pos.x = -1
+                            PLAYERS[plyr_id].pos.y = -1
                         await broadcastPlayer("5", value.shooter)
                         break
 

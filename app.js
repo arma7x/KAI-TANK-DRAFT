@@ -98,12 +98,13 @@ var game = {
           const move = dataP.players[p];
           if (p !== myId) {
             const dir = pb_root.Direction.__proto__[move.dir].toLowerCase();
-            if (othersPlayer[p] == null) {
+            if (othersPlayer[p] == null && move.pos.x >= 0 && move.pos.y >= 0 && move.hp > 0) {
+              console.log(p, "joined");
               othersPlayer[p] = me.game.world.addChild(me.pool.pull("greentank"));
               othersPlayer[p].__ID__ = p
               othersPlayer[p].__HP__ = move.hp
             }
-            if (othersPlayer[p]) {
+            if (othersPlayer[p] && move.pos.x >= 0 && move.pos.y >= 0 && move.hp > 0) {
               if (othersPlayer[p].__DIRECTION__ !== dir) {
                 rotateTank(othersPlayer[p], dir);
               }
@@ -169,7 +170,27 @@ var game = {
         }
       }
       if (dataP._type === "5") {
-        console.log(dataP);
+        for (var p in dataP.players) {
+          p = parseInt(p)
+          var d = dataP.players[p]
+          if (p !== myId) {
+            if (d.hp <= 0) {
+              if (othersPlayer[p]) {
+                console.log("REMOVE", p);
+                me.game.world.removeChild(othersPlayer[p]);
+                delete othersPlayer[p];
+              }
+            } else if (d.hp !== 100) {
+              console.log(p, "hitted");
+            }
+          } else {
+            if (d.hp <= 0) {
+              me.game.world.removeChild(currentPlayer);
+            } else if (d.hp !== 100) {
+              console.log("Me", "hitted");
+            }
+          }
+        }
       }
     };
     socket.onopen = () => {
@@ -250,10 +271,10 @@ game.GrassTile = me.Sprite.extend({
 });
 
 game.Tank = me.Sprite.extend({
-  init: function() {
+  init: function(x=0,y=0) {
     this._super(me.Sprite, "init", [
-      me.game.viewport.width / 2,
-      me.game.viewport.height / 2,
+      x,
+      y,
       {
         image: me.loader.getImage("greentank"),
       }
