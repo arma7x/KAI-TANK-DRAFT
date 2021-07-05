@@ -96,7 +96,7 @@ var game = {
         for (let p in dataP.players) {
           p = parseInt(p)
           const move = dataP.players[p];
-          if (p !== myId) {
+          if (p !== myId && myId !== false) {
             const dir = pb_root.Direction.__proto__[move.dir].toLowerCase();
             if (othersPlayer[p] == null && move.pos.x >= 0 && move.pos.y >= 0 && move.hp > 0) {
               console.log(p, "joined");
@@ -111,7 +111,7 @@ var game = {
               othersPlayer[p].pos.x = me.Math.clamp(move.pos.x, othersPlayer[p].minX, othersPlayer[p].maxX);
               othersPlayer[p].pos.y = me.Math.clamp(move.pos.y, othersPlayer[p].minY, othersPlayer[p].maxY);
             }
-          } else if (DEBUG && shadowPlayer && p === myId) {
+          } else if (DEBUG && shadowPlayer && p === myId && myId !== false) {
             //setTimeout(() => {
               const dir = pb_root.Direction.__proto__[move.dir].toLowerCase();
               if (shadowPlayer.__DIRECTION__ !== dir) {
@@ -185,8 +185,12 @@ var game = {
             }
           } else {
             if (d.hp <= 0) {
-              me.game.world.removeChild(currentPlayer);
+              currentPlayer.__HP__ = d.hp;
+              // me.game.world.removeChild(currentPlayer);
+              // currentPlayer = null
+              console.log("REMOVE", "ME");
             } else if (d.hp !== 100) {
+              currentPlayer.__HP__ = d.hp
               console.log("Me", "hitted");
             }
           }
@@ -280,6 +284,7 @@ game.Tank = me.Sprite.extend({
       }
     ]);
     this.__DIRECTION__ = 'down';
+    this.__HP__ = 0;
     this.vel = 65;
     this.minX = (this.width / 2);
     this.maxX = WIDTH - (this.height / 2);
@@ -305,7 +310,12 @@ game.Tank = me.Sprite.extend({
   update: function(time) {
     this._super(me.Sprite, "update", [time]);
 
-    if (this.__ID__ === myId) {
+    if (currentPlayer.__HP__ <= 0 && this.__ID__ === myId) {
+      me.game.world.removeChild(this); // emmm not removed
+      return true;
+    }
+
+    if (this.__ID__ === myId && currentPlayer.__HP__ > 0) {
       var newX = this.pos.x, newY = this.pos.y, newDirection = this.__DIRECTION__;
       const oldX = this.pos.x, oldY = this.pos.y, oldDirection = this.__DIRECTION__;
       if (me.input.isKeyPressed("left")) {
