@@ -111,10 +111,10 @@ async def decode_message(s):
 
     # raise ValueError(f"Invalid message type: {message_type}")
 
-async def broadcastPlayer(id_):
+async def broadcastPlayer(t, id_):
     info_message = tank_pb2.InfoBroadcast(players=await get_positions(id_))
     for player in PLAYERS.values():
-        await player.socket.send(await encode_message("0", info_message))
+        await player.socket.send(await encode_message(t, info_message))
 
 async def broadcastBullet():
     global BULLETS
@@ -143,6 +143,11 @@ async def periodic():
                         value.pos.y = -1
                         expired = True
                         off_bullets[key] = value
+                        PLAYERS[plyr_id].hp -= 5
+                        # if (PLAYERS[plyr_id].hp == 0):
+                            # PLAYERS[plyr_id].pos.x = -1
+                            # PLAYERS[plyr_id].pos.y = -1
+                        await broadcastPlayer("5", value.shooter)
                         break
 
             if not expired:
@@ -197,11 +202,12 @@ async def accept(ws, path):
 
     id_ = await init(nick, ws)
     init_message = tank_pb2.Init(id=id_)
+    init_message.hp = PLAYERS[id_].hp
     init_message.move.pos.x = PLAYERS[id_].pos.x
     init_message.move.pos.y = PLAYERS[id_].pos.y
     init_message.move.dir = PLAYERS[id_].dir_.value
     await ws.send(await encode_message("2", init_message))
-    await broadcastPlayer(id_)
+    await broadcastPlayer("0", id_)
     await broadcastBullet()
     # hit race-condition
     try:
@@ -209,7 +215,7 @@ async def accept(ws, path):
           t, message = await decode_message(await ws.recv())
           if t == "0":
               await pos(id_, message)
-              await broadcastPlayer(id_)
+              await broadcastPlayer("0", id_)
           if t == "3":
               bX: float = 0
               bY: float = 0

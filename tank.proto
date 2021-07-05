@@ -54,7 +54,8 @@ message Disconnect {
 
 message Init {
   required fixed32 id = 1;
-  required Movement move = 2;
+  required float hp = 2;
+  required Movement move = 3;
 }
 
 message ErrorMessage {

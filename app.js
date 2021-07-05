@@ -42,7 +42,7 @@ function decodeMessage(s) {
   let buffer = new Uint8Array(bufferLength);
   let message = null;
   protobuf.util.base64.decode(content, buffer, 0);
-  if (type === "0") {
+  if (type === "0" || type === "5") {
     message = pb_root.InfoBroadcast.decode(buffer);
   } else if (type === "1") {
     message = pb_root.BulletBroadcast.decode(buffer);
@@ -101,6 +101,7 @@ var game = {
             if (othersPlayer[p] == null) {
               othersPlayer[p] = me.game.world.addChild(me.pool.pull("greentank"));
               othersPlayer[p].__ID__ = p
+              othersPlayer[p].__HP__ = move.hp
             }
             if (othersPlayer[p]) {
               if (othersPlayer[p].__DIRECTION__ !== dir) {
@@ -139,7 +140,8 @@ var game = {
       if (dataP._type === "2") {
         myId = dataP.id
         currentPlayer = me.game.world.addChild(me.pool.pull("greentank"));
-        currentPlayer.__ID__ = myId
+        currentPlayer.__ID__ = myId;
+        currentPlayer.__HP__ = dataP.hp;
         currentPlayer.pos.x = me.Math.clamp(dataP.move.pos.x, currentPlayer.minX, currentPlayer.maxX);
         currentPlayer.pos.y = me.Math.clamp(dataP.move.pos.y, currentPlayer.minY, currentPlayer.maxY);
         const dir = pb_root.Direction.__proto__[dataP.move.dir].toLowerCase();
@@ -165,6 +167,9 @@ var game = {
           me.game.world.removeChild(othersPlayer[dataP.id]);
           delete othersPlayer[dataP.id];
         }
+      }
+      if (dataP._type === "5") {
+        console.log(dataP);
       }
     };
     socket.onopen = () => {
