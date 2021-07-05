@@ -188,11 +188,11 @@ async def accept(ws, path):
         nick = message.nick
     if nick and not nick_check(nick):
         err = tank_pb2.ErrorMessage("Nick may contain only alphanumeric characters")
-        await ws.send(await encode_message("5", err))
+        await ws.send(await encode_message("9", err))
         return
     if nick and len(nick) > 12:
         err = tank_pb2.ErrorMessage("Nick must be 12 characters or less")
-        await ws.send(await encode_message("5", err))
+        await ws.send(await encode_message("9", err))
         return
 
     id_ = await init(nick, ws)
@@ -207,7 +207,6 @@ async def accept(ws, path):
     try:
       async for message in ws:
           t, message = await decode_message(await ws.recv())
-          print(t)
           if t == "0":
               await pos(id_, message)
               await broadcastPlayer(id_)

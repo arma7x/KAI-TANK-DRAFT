@@ -52,7 +52,7 @@ function decodeMessage(s) {
     message = pb_root.Voice.decode(buffer);
   } else if (type === "4") {
     message = pb_root.Disconnect.decode(buffer);
-  } else if (type === "5") {
+  } else if (type === "9") {
     message = pb_root.ErrorMessage.decode(buffer);
   }
   if (message === null) {

@@ -12,4 +12,5 @@ message content according to `tank.proto` and encoded in base64.
  - `2`: Init
  - `3`: Voice
  - `4`: Disconnect
- - `5`: Error Message
+ - `5`: Stat Broadcast
+ - `9`: Error Message
