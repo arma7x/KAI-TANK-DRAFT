@@ -207,6 +207,7 @@ async def accept(ws, path):
     try:
       async for message in ws:
           t, message = await decode_message(await ws.recv())
+          print(t)
           if t == "0":
               await pos(id_, message)
               await broadcastPlayer(id_)

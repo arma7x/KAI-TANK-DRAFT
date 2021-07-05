@@ -206,15 +206,15 @@ game.PlayScreen = me.Stage.extend({
 var reloading = false;
 me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
   const yAxis = ['up', 'down'];
-  if (keyCode === 32 && !reloading) {
-    reloading = true;
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      console.log("Pew Pew");
+  if (keyCode === 32) {
+    if (socket && socket.readyState === WebSocket.OPEN && !reloading) {
+      console.log("Pew Pew", reloading);
+      reloading = true;
       socket.send(encodeMessage("3", {}));
+      setTimeout(() => {
+        reloading = false
+      }, 100);
     }
-    setTimeout(() => {
-      reloading = false
-    }, 100);
   }
 
 });
