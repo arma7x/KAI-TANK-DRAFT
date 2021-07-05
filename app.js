@@ -305,7 +305,7 @@ game.Tank = me.Sprite.extend({
     if (this.__HP__ <= 0 && this.__ID__ === myId) {
       me.game.world.removeChild(this); // emmm not removed
       currentPlayer = null
-      if (DEBUG) {
+      if (DEBUG && shadowPlayer) {
         me.game.world.removeChild(shadowPlayer)
         shadowPlayer = null
       }
