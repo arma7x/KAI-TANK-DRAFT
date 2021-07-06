@@ -228,9 +228,7 @@ async def accept(ws, path):
                   Direction.RIGHT: (lambda x,y: (x + TANK_HEIGHT/2, y - BULLET_SIZE/2)),
                   Direction.LEFT: (lambda x,y: (x - TANK_WIDTH/2 - BULLET_SIZE/2, y - TANK_HEIGHT/2))
               }
-
-              message.pos.x = bX
-              message.pos.y = bY
+              message.pos.x, message.pos.y = dir2xy[PLAYERS[id_].dir_](PLAYERS[id_].pos.x,PLAYERS[id_].pos.y)
               message.dir = PLAYERS[id_].dir_.value
               BULLETS[message.id] = message
               await broadcastBullet()
