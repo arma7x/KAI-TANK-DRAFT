@@ -90,12 +90,14 @@ async def pos(id_, move):
 # Refer to PROTOCOL.md for message_type
 
 async def encode_message(message_type, message):
+    print("Encoding message of type", message_type, file=sys.stderr)
     return message_type + b64encode(message.SerializeToString()).decode("utf-8") 
 
 async def decode_message(s):
     message_type = s[0]
     content = s[1:]
-
+    
+    print("Decoding message of type", message_type, file=sys.stderr)
     if message_type == "0":
         return "0", tank_pb2.Movement.FromString(b64decode(content))
     if message_type == "1":
