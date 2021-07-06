@@ -177,8 +177,8 @@ async def periodic():
                       expired = True
 
         if len(off_bullets) > 0:
-            for key in off_bullets.keys():
-                if key in BULLETS.keys():
+            for key in off_bullets:
+                if key in BULLETS:
                     BULLETS.pop(key)
             info_message = tank_pb2.BulletBroadcast(bullets=off_bullets)
             for player in PLAYERS.values():
