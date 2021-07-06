@@ -76,8 +76,6 @@ async def init(nick, ws):
     rand_x = random.randint(TANK_WIDTH / 2, MAP_WIDTH - TANK_WIDTH / 2)
     rand_y = random.randint(TANK_HEIGHT / 2, MAP_HEIGHT - TANK_HEIGHT / 2)
     PLAYERS[id_] = Player(nick=nick, pos=Position(x=rand_x, y=rand_y), socket=ws)
-    # PLAYERS[id_] = Player(nick=nick, pos=Position(x=271, y=297), socket=ws)
-    # PLAYERS[id_] = Player(nick=nick, pos=Position(x=100, y=100), socket=ws)
     return id_
 
 
@@ -86,8 +84,6 @@ async def pos(id_, move):
     PLAYERS[id_].pos.x = move.pos.x
     PLAYERS[id_].pos.y = move.pos.y
     # TODO: Check and see if it's a valid dir
-    # if move.dir not in {"UP", "DOWN", "RIGHT", "LEFT"}:
-        # raise ValueError(f"Invalid direction: {move.dir}")
     
     PLAYERS[id_].dir_ = getattr(Direction, Direction(move.dir).name)
 
@@ -109,7 +105,7 @@ async def decode_message(s):
     if message_type == "3":
         return "3", tank_pb2.Bullet.FromString(b64decode(content))
 
-    # raise ValueError(f"Invalid message type: {message_type}")
+    raise ValueError(f"Invalid message type: {message_type}")
 
 async def broadcast_player(t, id_):
     info_message = tank_pb2.InfoBroadcast(players=await get_positions(id_))
