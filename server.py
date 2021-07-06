@@ -222,21 +222,13 @@ async def accept(ws, path):
               message.id = await generate_id()
               message.shooter = id_
                 
-              # TODO: Use hashtable/dict here
-              if PLAYERS[id_].dir_ in (Direction.UP, Direction.DOWN):
-                  if PLAYERS[id_].dir_ == Direction.DOWN:
-                      bX = PLAYERS[id_].pos.x - (BULLET_SIZE / 2)
-                      bY = PLAYERS[id_].pos.y + (TANK_HEIGHT / 2)
-                  else:
-                      bX = PLAYERS[id_].pos.x - (BULLET_SIZE / 2)
-                      bY = PLAYERS[id_].pos.y - (TANK_HEIGHT / 2) - (BULLET_SIZE / 2)
-              else:
-                  if PLAYERS[id_].dir_ == Direction.RIGHT:
-                      bX = PLAYERS[id_].pos.x + (TANK_WIDTH / 2)
-                      bY = PLAYERS[id_].pos.y - (BULLET_SIZE / 2)
-                  else:
-                      bX = PLAYERS[id_].pos.x - (TANK_WIDTH / 2) - (BULLET_SIZE / 2)
-                      bY = PLAYERS[id_].pos.y - (BULLET_SIZE / 2)
+              dir2xy = {
+                  Direction.DOWN: (lambda x,y: (x - BULLET_SIZE/2, y + TANK_HEIGHT/2)),
+                  Direction.UP: (lambda x,y: (x - BULLET_SIZE/2, y - TANK_HEIGHT/2 - BULLET_SIZE/2)),
+                  Direction.RIGHT: (lambda x,y: (x + TANK_HEIGHT/2, y - BULLET_SIZE/2)),
+                  Direction.LEFT: (lambda x,y: (x - TANK_WIDTH/2 - BULLET_SIZE/2, y - TANK_HEIGHT/2))
+              }
+
               message.pos.x = bX
               message.pos.y = bY
               message.dir = PLAYERS[id_].dir_.value
