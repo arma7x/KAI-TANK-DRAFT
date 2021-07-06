@@ -67,6 +67,7 @@ var game = {
   resources: [
     { name: "map", type: "image", "src": "/map.png", },
     { name: "greentank", type: "image", "src": "/tanks/tile000.png", },
+    { name: "yellowtank", type: "image", "src": "/tanks/tile004.png", },
     { name: "grass_1", type: "image", "src": "/tiles/tile000.png", },
     { name: "grass_2", type: "image", "src": "/tiles/tile001.png", },
     { name: "grass_3", type: "image", "src": "/tiles/tile002.png", },
@@ -75,7 +76,7 @@ var game = {
   ],
   loaded: function() {
     me.game.world.resize(WIDTH, HEIGHT);
-    me.pool.register("greentank", game.Tank);
+    me.pool.register("tank", game.Tank);
     me.pool.register("grass", game.Tank);
     me.pool.register("grass", game.GrassTile);
     me.pool.register("bullet", game.Bullet);
@@ -99,7 +100,7 @@ var game = {
           if (p !== myId && myId !== false) {
             const dir = pb_root.Direction.__proto__[move.dir].toLowerCase();
             if (othersPlayer[p] == null && move.pos.x >= 0 && move.pos.y >= 0 && move.hp > 0) {
-              othersPlayer[p] = me.game.world.addChild(me.pool.pull("greentank"));
+              othersPlayer[p] = me.game.world.addChild(me.pool.pull("tank", 0, 0, "yellowtank"));
               othersPlayer[p].__ID__ = p
               othersPlayer[p].__HP__ = move.hp
             }
@@ -137,7 +138,7 @@ var game = {
       }
       if (dataP._type === "2") {
         myId = dataP.id
-        currentPlayer = me.game.world.addChild(me.pool.pull("greentank"));
+        currentPlayer = me.game.world.addChild(me.pool.pull("tank", 0, 0, "greentank"));
         currentPlayer.__ID__ = myId;
         currentPlayer.__HP__ = dataP.hp;
         currentPlayer.pos.x = me.Math.clamp(dataP.move.pos.x, currentPlayer.minX, currentPlayer.maxX);
@@ -148,7 +149,7 @@ var game = {
         }
         follow(currentPlayer)
         if (DEBUG) {
-          shadowPlayer = me.game.world.addChild(me.pool.pull("greentank"));
+          shadowPlayer = me.game.world.addChild(me.pool.pull("tank", 0, 0, "greentank"));
           shadowPlayer.body.collisionType = me.collision.types.NO_OBJECT;
           shadowPlayer.__ID__ = 'DEBUG'
           shadowPlayer.pos.x = me.Math.clamp(dataP.move.pos.x, shadowPlayer.minX, shadowPlayer.maxX);
@@ -267,12 +268,12 @@ game.GrassTile = me.Sprite.extend({
 });
 
 game.Tank = me.Sprite.extend({
-  init: function(x=20,y=20) {
+  init: function(x=20,y=20,color="greentank") {
     this._super(me.Sprite, "init", [
       x,
       y,
       {
-        image: me.loader.getImage("greentank"),
+        image: me.loader.getImage(color),
       }
     ]);
     this.__DIRECTION__ = 'down';
