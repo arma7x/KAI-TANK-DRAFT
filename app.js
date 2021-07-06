@@ -190,7 +190,9 @@ var game = {
     };
     socket.onopen = () => {
       setTimeout(() => {
-        socket.send(JSON.stringify({ping: true}));
+        socket.send(
+          encodeMessage("2", {nick: window.prompt("Nick?", "pl" + parseInt(Math.random() * 1000).toString())})
+        );
       }, 500);
     }
   },
@@ -233,7 +235,7 @@ me.event.subscribe(me.event.KEYDOWN, function (action, keyCode, edge) {
     if (socket && socket.readyState === WebSocket.OPEN && !reloading) {
       console.log("Pew Pew", reloading);
       reloading = true;
-      socket.send(encodeMessage("3", {}));
+      socket.send(encodeMessage("3", {shooter: myId}));
       setTimeout(() => {
         reloading = false
       }, 100);
