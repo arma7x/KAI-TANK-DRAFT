@@ -24,6 +24,21 @@ TICKING = 1000/60
 PLAYERS = dict()
 BULLETS = dict()
 
+class ClientMessageType(Enum):
+    Movement = "0"
+    Voice = "1"
+    NickSelection = "2"
+    FireBullet = "3"
+
+class ServerMessageType(Enum):
+    InfoBroadcast = "0"
+    BulletBroadcast = "1"
+    Init = "2"
+    Voice = "3"
+    Disconnect = "4"
+    StatBroadcast = "5"
+    ErrorMessage = "9"
+
 class Direction(Enum):
     UP = 0
     DOWN = 1
@@ -90,14 +105,12 @@ async def pos(id_, move):
 # Refer to PROTOCOL.md for message_type
 
 async def encode_message(message_type, message):
-    print("Encoding message of type", message_type, file=sys.stderr)
     return message_type + b64encode(message.SerializeToString()).decode("utf-8") 
 
 async def decode_message(s):
     message_type = s[0]
     content = s[1:]
     
-    print("Decoding message of type", message_type, file=sys.stderr)
     if message_type == "0":
         return "0", tank_pb2.Movement.FromString(b64decode(content))
     if message_type == "1":
@@ -198,6 +211,12 @@ async def accept(ws, path):
         await ws.send(await encode_message("9", err))
         return
 
+    dir2xy = {
+        Direction.DOWN: (lambda x,y: (x - BULLET_SIZE/2, y + TANK_HEIGHT/2)),
+        Direction.UP: (lambda x,y: (x - BULLET_SIZE/2, y - TANK_HEIGHT/2 - BULLET_SIZE/2)),
+        Direction.RIGHT: (lambda x,y: (x + TANK_HEIGHT/2, y - BULLET_SIZE/2)),
+        Direction.LEFT: (lambda x,y: (x - TANK_WIDTH/2 - BULLET_SIZE/2, y - BULLET_SIZE/2))
+    }
     id_ = await init(nick, ws)
     init_message = tank_pb2.Init(id=id_)
     init_message.hp = PLAYERS[id_].hp
@@ -211,21 +230,15 @@ async def accept(ws, path):
     try:
       async for message in ws:
           t, message = await decode_message(await ws.recv())
-          if t == "0":
+          if t == ClientMessageType.Movement.value:
               await pos(id_, message)
               await broadcast_player("0", id_)
-          if t == "3":
+          if t == ClientMessageType.FireBullet.value:
               bX: float = 0
               bY: float = 0
               message.id = await generate_id()
               message.shooter = id_
                 
-              dir2xy = {
-                  Direction.DOWN: (lambda x,y: (x - BULLET_SIZE/2, y + TANK_HEIGHT/2)),
-                  Direction.UP: (lambda x,y: (x - BULLET_SIZE/2, y - TANK_HEIGHT/2 - BULLET_SIZE/2)),
-                  Direction.RIGHT: (lambda x,y: (x + TANK_HEIGHT/2, y - BULLET_SIZE/2)),
-                  Direction.LEFT: (lambda x,y: (x - TANK_WIDTH/2 - BULLET_SIZE/2, y - BULLET_SIZE/2))
-              }
               message.pos.x, message.pos.y = dir2xy[PLAYERS[id_].dir_](PLAYERS[id_].pos.x,PLAYERS[id_].pos.y)
               message.dir = PLAYERS[id_].dir_.value
               BULLETS[message.id] = message
